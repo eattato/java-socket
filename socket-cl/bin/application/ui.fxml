@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="823.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TextArea layoutX="106.0" layoutY="484.0" prefHeight="50.0" prefWidth="717.0" />
+      <Button layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="54.0" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="사전">
+         <font>
+            <Font name="Hancom Gothic Regular" size="15.0" />
+         </font>
+      </Button>
+      <Button layoutX="54.0" layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="54.0" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="나가기">
+         <font>
+            <Font name="Hancom Gothic Regular" size="12.0" />
+         </font>
+      </Button>
+      <ScrollPane layoutY="52.0" prefHeight="432.0" prefWidth="823.0">
+         <content>
+            <ScrollBar orientation="VERTICAL" prefHeight="431.0" prefWidth="18.0" />
+         </content>
+      </ScrollPane>
+      <Text layoutX="14.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="짭투온라인" wrappingWidth="223.6513671875">
+         <font>
+            <Font name="Hancom Gothic Regular" size="24.0" />
+         </font>
+      </Text>
+      <Text layoutX="740.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0 / 0" textAlignment="CENTER" wrappingWidth="68.6513671875">
+         <font>
+            <Font name="Hancom Gothic Regular" size="16.0" />
+         </font>
+      </Text>
+      <Text layoutX="282.0" layoutY="34.0" strokeType="OUTSIDE" strokeWidth="0.0" text="매너플 / 이건킹정 / 스겜" textAlignment="CENTER" wrappingWidth="310.6513671875">
+         <font>
+            <Font name="Hancom Gothic Regular" size="18.0" />
+         </font>
+      </Text>
+   </children>
+</AnchorPane>
