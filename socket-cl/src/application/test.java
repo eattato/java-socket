@@ -26,7 +26,7 @@ public class test extends Application {
 			FXMLLoader fxml = new FXMLLoader(getClass().getResource("ui.fxml"));
 			Parent root = fxml.load();
 			Controller controller = (Controller)fxml.getController();
-			Scene scene = new Scene(root,800,400);
+			Scene scene = new Scene(root,823,534);
 			
 			primaryStage.setScene(scene);
 			primaryStage.show();
@@ -35,9 +35,8 @@ public class test extends Application {
 			Thread thread = new Thread() {
 				@Override
 				public void run() {
-					System.out.println("아이고난2");
 					try {
-						Thread.sleep(5000);
+						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -50,7 +49,37 @@ public class test extends Application {
 							command.put("act", "joinMessage");
 							command.put("param", "타지리리님 한판판해요");
 							controller.uiControl(command);
-							System.out.println("아이고난4");
+							
+							HashMap<String, String> command2 = new HashMap<String, String>();
+							command2.put("act", "send");
+							command2.put("param", "케인");
+							command2.put("msg", "gway joy go");
+							controller.uiControl(command2);
+							//controller.uiControl(command2);
+						}
+					});
+					
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							HashMap<String, String> command = new HashMap<String, String>();
+							command.put("act", "joinMessage");
+							command.put("param", "과로사");
+							controller.uiControl(command);
+							
+							HashMap<String, String> command2 = new HashMap<String, String>();
+							command2.put("act", "send");
+							command2.put("param", "과로사");
+							command2.put("msg", "오마에와 모 신데이루!!! 나니!!!!!!!!!!!!!!!!!!!!");
+							controller.uiControl(command2);
+							//controller.uiControl(command2);
 						}
 					});
 				}
