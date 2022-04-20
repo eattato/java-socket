@@ -7,13 +7,17 @@
 
 <AnchorPane fx:controller="application.Controller" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="823.0" style="-fx-background-color: #FFFB7C;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <TextArea fx:id="typer" layoutX="106.0" layoutY="484.0" prefHeight="50.0" prefWidth="717.0" />
       <Button fx:id="dict" layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="54.0" style="-fx-background-color: #FFBE32; -fx-background-radius: 0;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="사전">
          <font>
             <Font name="Hancom Gothic Regular" size="15.0" />
          </font>
       </Button>
       <Button fx:id="leave" layoutX="54.0" layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="54.0" style="-fx-background-color: #FF3333; -fx-background-radius: 0;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="나가기">
+         <font>
+            <Font name="Hancom Gothic Regular" size="12.0" />
+         </font>
+      </Button>
+      <Button fx:id="send" layoutX="736.0" layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="87.0" style="-fx-background-color: #FFFF00; -fx-background-radius: 0;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="전송">
          <font>
             <Font name="Hancom Gothic Regular" size="12.0" />
          </font>
@@ -39,5 +43,10 @@
             <Font name="Hancom Gothic Regular" size="18.0" />
          </font>
       </Text>
+      <TextField fx:id="typer" layoutX="106.0" layoutY="484.0" prefHeight="50.0" prefWidth="630.0">
+         <font>
+            <Font name="Hancom Gothic Regular" size="20.0" />
+         </font>
+      </TextField>
    </children>
 </AnchorPane>

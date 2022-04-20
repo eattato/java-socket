@@ -21,24 +21,52 @@ public class Server {
 		serverStart("", 8888);
 	}
 	
-	public static void serverStart(String ip, int port) {
+	public static void serverStart(String ip, int port) throws SocketException {
 		try {
-			if (ip == null) {
+			if (ip.equals("")) {
 				// 로컬 호스트 서버 소켓 객체
-				ServerSocket server = new ServerSocket(8888);
+				server = new ServerSocket(8888);
+				System.out.println("서버가 localhost:" + 8888 + "에서 열렸습니다.");
 			} else {
 				// 서버 소켓 객체 생성
-				ServerSocket server = new ServerSocket();
+				server = new ServerSocket();
 				// 서버 소켓에 서버 컴의 IP, 포트 할당
 				server.bind(new InetSocketAddress(ip, port));
+				System.out.println("서버가 " + ip + ":" + port + "에서 열렸습니다.");
 			}
 			
-			while (true) {
-				// 클라이언트 연결 요청 수락
-				Socket connection = server.accept();
-				Client client = new Client(connection);
-				clients.add(client);
-				System.out.println("접속: " + (InetSocketAddress)connection.getRemoteSocketAddress());
+			Thread thread = new Thread() {
+				public void run() {
+					BufferedReader cmdInput = new BufferedReader(new InputStreamReader(System.in));
+					try {
+						while (true) {
+							String cmd = cmdInput.readLine();
+							if (cmd.equals("shutdown") == true) {
+								shutdown();
+							}
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			};
+			thread.start();
+			try {
+				while (server.isClosed() == false) {
+					if (server.isClosed() == false) {
+						// 클라이언트 연결 요청 수락
+						Socket connection = server.accept();
+						Client client = new Client(connection);
+						clients.add(client);
+						System.out.println("접속: " + (InetSocketAddress)connection.getRemoteSocketAddress());
+					} else {
+						System.out.println("클라이언트 접속 허가 루프 종료");
+						break;
+					}
+				}
+			} catch (Exception error) {
+				System.out.println("서버 소켓 상태: " + server.isClosed());
 			}
 		} catch (Exception error) {
 			error.printStackTrace();
@@ -55,6 +83,7 @@ public class Server {
 			Iterator<Client> iter = clients.iterator();
 			while (iter.hasNext()) {
 				Client client = iter.next();
+				System.out.println("접속 해제: " + (InetSocketAddress)client.connection.getRemoteSocketAddress());
 				
 				// 클라이언트 소켓 연결 종료
 				client.connection.close();

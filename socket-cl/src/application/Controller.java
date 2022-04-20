@@ -2,6 +2,7 @@ package application;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -9,7 +10,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
@@ -18,7 +19,7 @@ import javafx.scene.text.TextAlignment;
 
 public class Controller {
 	@FXML
-	private TextArea typer;
+	private TextField typer;
 	
 	@FXML
 	private ScrollPane scroll;
@@ -31,6 +32,9 @@ public class Controller {
 	
 	@FXML
 	private Button leave;
+	
+	@FXML
+	private Button send;
 	
 	@FXML
 	private Text roomName;
@@ -63,6 +67,7 @@ public class Controller {
 			String act = command.get("act");
 			String param = command.get("param");
 			String msg = command.get("msg");
+			String effect = command.get("effect");
 			if (act.equals("joinMessage") == true || act.equals("leaveMessage") == true) {
 				latest = "System";
 				//scrollUp(60); // 전에 있던 UI 오브젝트들 모두 세로 사이즈만큼 위로
@@ -107,7 +112,6 @@ public class Controller {
 					chatLabel.setStyle("-fx-background-color: yellow; -fx-background-radius: 15;");
 					
 				} else {
-					System.out.println("본인 메세지 아님");
 					isSelf = false;
 					chatLabel.setLayoutX(70);
 					chatLabel.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
@@ -115,13 +119,11 @@ public class Controller {
 				
 				// 평범한 말풍선
 				if (param.equals(latest) == true) {
-					System.out.println("첫 문자아님");
 					currentScroll += 50;
 					chatLabel.setLayoutY(4);
 					chatPane.setPrefHeight(50);
 				} else {
 					// 프로필 포함 말풍선
-					System.out.println("첫 문자임");
 					latest = param;
 					currentScroll += 77;
 					chatLabel.setLayoutY(33);
@@ -156,6 +158,20 @@ public class Controller {
 				scrollFrame.getChildren().add(chatPane);
 				scrollObjects.add(chatPane);
 				
+				String effectType = "";
+				double effectStrength = 0;
+				if (effect != null) {
+					if (effect.split(" ").length == 2) {
+						effectType = effect.split(" ")[0];
+						effectStrength = Double.parseDouble(effect.split(" ")[1]);
+					}
+				}
+				final String effectTypef = effectType;
+				final double effectStrengthf = effectStrength;
+				
+				double chatLabelOriX = chatLabel.getLayoutX();
+				double chatLabelOriY = chatLabel.getLayoutY();
+				
 				String[] msgSplit = msg.split("");
 				Thread thread = new Thread() {
 					@Override
@@ -163,15 +179,26 @@ public class Controller {
 						for (int ind = 0; ind < msgSplit.length; ind++ ) {
 							final int indexFinal = ind;
 							try {
-								Thread.sleep(50);
+								Thread.sleep(500 / msgSplit.length);
 							} catch (InterruptedException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 							Platform.runLater(() -> {
-								chatLabel.setText(chatLabel.getText() + msgSplit[indexFinal]);
-								double currentTextWidth = new Text(chatLabel.getText()).getLayoutBounds().getWidth();
-								chatLabel.setPrefWidth(currentTextWidth * (15 / 12 * 1.5) + 50);
+								String currentText = chatLabel.getText() + msgSplit[indexFinal];
+								double currentTextWidth = new Text(currentText).getLayoutBounds().getWidth();
+								chatLabel.setText(currentText);
+								chatLabel.setPrefWidth(currentTextWidth * (20 / 10) + 50);
+								
+								if (effectTypef.equals("shake") == true) {
+									if (indexFinal != msgSplit.length - 1) {
+										chatLabel.setLayoutX(chatLabelOriX + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+										chatLabel.setLayoutY(chatLabelOriY + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+									} else {
+										chatLabel.setLayoutX(chatLabelOriX);
+										chatLabel.setLayoutY(chatLabelOriY);
+									}
+								}
 							});
 						}
 					}

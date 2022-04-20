@@ -1,16 +1,12 @@
 package application;
 	
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.net.*;
 import java.io.*;
@@ -20,44 +16,64 @@ import java.util.Iterator;
 
 
 public class Main extends Application { 
-	Socket socket;
+	static Socket connection;
 	
 	String ip = "127.0.0.1";
 	int port = 8888;
 	
+	public static void startClient(String ip, int port) {
+		try {
+			connection = new Socket(ip, port);
+			recv();
+		} catch (Exception error) {
+			error.printStackTrace();
+		}
+	}
 	
-	@FXML
-	private TextArea typer;
+	public void shutdown() {
+		try {
+			connection.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
-	@FXML
-	private ScrollPane scroll;
-	
-	@FXML
-	private Pane scrollFrame;
-	
-	@FXML
-	private Button dict;
-	
-	@FXML
-	private Button leave;
-	
-	@FXML
-	private Text roomName;
-	
-	@FXML
-	private Text roomSetting;
-	
-	@FXML
-	private Text roomAdmits;
-	
-	
-	private ArrayList<Pane> scrollObjects = new ArrayList<Pane>();
-	
-	public void startClient(String ip, int port) {
+	// 서버에서 받음
+	public static void recv() {
+		// 클라이언트 측에선 어차피 recv 스레드밖에 없으니 걍 스레드 풀 안 씀
 		Thread thread = new Thread() {
 			public void run() {
 				try {
-					recv();
+					while (true) {
+						// 서버 recv 코드랑 똑같음. 
+						InputStream input = connection.getInputStream();
+						ObjectInputStream inputOBJ = new ObjectInputStream(input);
+						@SuppressWarnings("unchecked")
+						HashMap<String, String> freight = (HashMap<String, String>) inputOBJ.readObject();
+						
+						if (freight.get("act") == "join") {
+							 
+						}
+					}
+				} catch (Exception error) {
+					System.out.println("서버와의 접속이 끊어졌습니다.");
+				}
+			}
+		};
+		thread.start();
+	}
+	
+	// 서버로 전송
+	public void send(HashMap<String, String> freight) {
+		Thread thread = new Thread() {
+			public void run() {
+				try {
+					OutputStream output = connection.getOutputStream();
+					ObjectOutputStream outputOBJ = new ObjectOutputStream(output);
+					
+					outputOBJ.writeObject(freight);
+					outputOBJ.flush();
 				} catch (Exception error) {
 					error.printStackTrace();
 				}
@@ -66,102 +82,78 @@ public class Main extends Application {
 		thread.start();
 	}
 	
-	public void shutdown() {
-		
-	}
-	
-	// 서버에서 받음
-	public void recv() {
-		try {
-			while (true) {
-				// 서버 recv 코드랑 똑같음. 
-				InputStream input = socket.getInputStream();
-				ObjectInputStream inputOBJ = new ObjectInputStream(input);
-				@SuppressWarnings("unchecked")
-				HashMap<String, String> freight = (HashMap<String, String>) inputOBJ.readObject();
-				
-				if (freight.get("act") == "join") {
-					 
-				}
-			}
-		} catch (Exception error) {
-			System.out.println("서버와의 접속이 끊어졌습니다.");
-		}
-	}
-	
-	// 서버로 전송
-	public void send(HashMap<String, String> freight) {
-		Thread thread = new Thread() {
-			public void run() {
-				try {
-					OutputStream output = socket.getOutputStream();
-					ObjectOutputStream outputOBJ = new ObjectOutputStream(output);
-					
-					outputOBJ.writeObject(freight);
-					outputOBJ.flush();
-				} catch (Exception error) {
-					
-				}
-			}
-		};
-	}
-	
-	// UI 제어
-	public void scrollUp(int move) {
-		// 스크롤에 있는 모든 오브젝트 move만큼 위로 이동
-		Iterator<Pane> scrollIter = scrollObjects.iterator();
-		while (scrollIter.hasNext() == true) {
-			Pane scrollObject = scrollIter.next();
-			scrollObject.setLayoutY(scrollObject.getLayoutY() + move);
-			scrollIter.remove();
-		}
-	}
-	
-	public void uiControl(HashMap<String, String> command) {
-		String act = command.get("act");
-		String param = command.get("param");
-		String msg = command.get("msg");
-		if (act.equals("joinMessage") == true || act.equals("leaveMessage") == true) {
-			scrollUp(60); // 전에 있던 UI 오브젝트들 모두 세로 사이즈만큼 위로
-			Pane joinPane = new Pane(); // 새 Pane 생성
-			joinPane.setLayoutX(144);
-			joinPane.setLayoutY(15);
-			joinPane.setPrefWidth(816);
-			joinPane.setPrefHeight(60);
-			Label joinLabel = new Label();
-			if (act.equals("joinMessage") == true) {
-				joinLabel.setText(param + " 님이 입장하였습니다.");
-			} else {
-				joinLabel.setText(param + " 님이 퇴장하였습니다.");
-			}
-			joinLabel.setAlignment(Pos.CENTER); // 라벨 가운데 정렬
-			joinLabel.setLayoutX(144);
-			joinLabel.setLayoutY(16);
-			joinLabel.setPrefWidth(524);
-			joinLabel.setPrefHeight(31);
-			joinLabel.setStyle("-fx-background-color: #00000033; -fx-background-radius: 10;");
-			joinPane.getChildren().add(joinLabel);
-			scrollFrame.getChildren().add(joinPane);
-			scrollObjects.add(joinPane);
-		} else if (act.equals("send") == true || act.equals("recv") == true) {
-			
-		}
-	}
-	
-	@Override
 	public void start(Stage primaryStage) {
 		try {
-			Parent root = FXMLLoader.load(getClass().getResource("ui.fxml"));
-			Scene scene = new Scene(root,800,400);
+			FXMLLoader fxml = new FXMLLoader(getClass().getResource("ui.fxml"));
+			Parent root = fxml.load();
+			Controller controller = (Controller)fxml.getController();
+			Scene scene = new Scene(root, 823, 534);
 			
 			primaryStage.setScene(scene);
-			primaryStage.show();			
+			primaryStage.show();
+			
+			// FXML 제어에는 그냥 스레드를 못 쓰기 때문에 FXML이 지원하는 runLater 사용
+			Thread thread = new Thread() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							HashMap<String, String> command = new HashMap<String, String>();
+							command.put("act", "joinMessage");
+							command.put("param", "타지리리님 한판판해요");
+							controller.uiControl(command);
+							
+							HashMap<String, String> command2 = new HashMap<String, String>();
+							command2.put("act", "send");
+							command2.put("param", "케인");
+							command2.put("msg", "gway joy go");
+							controller.uiControl(command2);
+							//controller.uiControl(command2);
+						}
+					});
+					
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							HashMap<String, String> command = new HashMap<String, String>();
+							command.put("act", "joinMessage");
+							command.put("param", "과로사");
+							controller.uiControl(command);
+							
+							HashMap<String, String> command2 = new HashMap<String, String>();
+							command2.put("act", "send");
+							command2.put("param", "과로사");
+							command2.put("msg", "오마에와 모 신데이루!!! 나니!!!!!!!!!!!!!!!!!!!!");
+							command2.put("effect", "shake 30");
+							controller.uiControl(command2);
+							//controller.uiControl(command2);
+						}
+					});
+				}
+			};
+			thread.start();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
+		startClient("", 8888);
 		launch(args);
 	}
 }
