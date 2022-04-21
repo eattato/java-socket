@@ -6,9 +6,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 import java.net.*;
+import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,9 +23,19 @@ public class Main extends Application {
 	String ip = "127.0.0.1";
 	int port = 8888;
 	
-	public static void startClient(String ip, int port) {
+	public ObjectInputStream input;
+	public ObjectOutputStream output;
+	public Controller controller;
+	
+	public void startClient(String ip, int port) {
 		try {
+			System.out.println("서버 소켓 연결 중");
 			connection = new Socket(ip, port);
+			System.out.println("서버 입출력 스트림 로딩 중");
+			// 중요! inputStream은 연결된 outputStream이 나올 때까지 대기타다가 생성되기 때문에 input을 뒤에 두기
+			output = new ObjectOutputStream(connection.getOutputStream());
+			input = new ObjectInputStream(connection.getInputStream());
+			System.out.println("서버 입출력 스트림 로딩 완료");
 			recv();
 		} catch (Exception error) {
 			error.printStackTrace();
@@ -40,20 +52,19 @@ public class Main extends Application {
 	}
 	
 	// 서버에서 받음
-	public static void recv() {
+	public void recv() {
 		// 클라이언트 측에선 어차피 recv 스레드밖에 없으니 걍 스레드 풀 안 씀
 		Thread thread = new Thread() {
 			public void run() {
 				try {
 					while (true) {
 						// 서버 recv 코드랑 똑같음. 
-						InputStream input = connection.getInputStream();
-						ObjectInputStream inputOBJ = new ObjectInputStream(input);
 						@SuppressWarnings("unchecked")
-						HashMap<String, String> freight = (HashMap<String, String>) inputOBJ.readObject();
+						HashMap<String, String> freight = (HashMap<String, String>) input.readObject();
 						
-						if (freight.get("act") == "join") {
-							 
+						String act = freight.get("act");
+						if (act.equals("join") == true) {
+							controller.uiControl(freight);
 						}
 					}
 				} catch (Exception error) {
@@ -69,11 +80,9 @@ public class Main extends Application {
 		Thread thread = new Thread() {
 			public void run() {
 				try {
-					OutputStream output = connection.getOutputStream();
-					ObjectOutputStream outputOBJ = new ObjectOutputStream(output);
-					
-					outputOBJ.writeObject(freight);
-					outputOBJ.flush();
+					output.writeObject(freight);
+					output.flush();
+					System.out.println(freight.get("act") + "를 보냄");
 				} catch (Exception error) {
 					error.printStackTrace();
 				}
@@ -83,11 +92,22 @@ public class Main extends Application {
 	}
 	
 	public void start(Stage primaryStage) {
+		startClient("", 8888);
+		
 		try {
 			FXMLLoader fxml = new FXMLLoader(getClass().getResource("ui.fxml"));
 			Parent root = fxml.load();
-			Controller controller = (Controller)fxml.getController();
+			controller = (Controller)fxml.getController();
 			Scene scene = new Scene(root, 823, 534);
+			
+			scene.setOnKeyPressed(event -> {
+				if (event.getCode() == KeyCode.ENTER) {
+					HashMap<String, String> msgSend = new HashMap<String, String>();
+					msgSend.put("act", "msg");
+					msgSend.put("msg", controller.getTextInput());
+					send(msgSend);
+				}
+			});
 			
 			primaryStage.setScene(scene);
 			primaryStage.show();
@@ -103,23 +123,6 @@ public class Main extends Application {
 						e.printStackTrace();
 					}
 					
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							HashMap<String, String> command = new HashMap<String, String>();
-							command.put("act", "joinMessage");
-							command.put("param", "타지리리님 한판판해요");
-							controller.uiControl(command);
-							
-							HashMap<String, String> command2 = new HashMap<String, String>();
-							command2.put("act", "send");
-							command2.put("param", "케인");
-							command2.put("msg", "gway joy go");
-							controller.uiControl(command2);
-							//controller.uiControl(command2);
-						}
-					});
-					
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -133,15 +136,26 @@ public class Main extends Application {
 							HashMap<String, String> command = new HashMap<String, String>();
 							command.put("act", "joinMessage");
 							command.put("param", "과로사");
-							controller.uiControl(command);
+							//controller.uiControl(command);
 							
 							HashMap<String, String> command2 = new HashMap<String, String>();
 							command2.put("act", "send");
 							command2.put("param", "과로사");
 							command2.put("msg", "오마에와 모 신데이루!!! 나니!!!!!!!!!!!!!!!!!!!!");
 							command2.put("effect", "shake 30");
-							controller.uiControl(command2);
 							//controller.uiControl(command2);
+							//controller.uiControl(command2);
+							
+							HashMap<String, String> serverCommand = new HashMap<String, String>();
+							serverCommand.put("act", "create");
+							serverCommand.put("roomType", "justchat");
+							serverCommand.put("roomName", "뭉탱이를 위한 채팅");
+							send(serverCommand);
+							
+							HashMap<String, String> joinCommand = new HashMap<String, String>();
+							joinCommand.put("act", "join");
+							joinCommand.put("param", "0");
+							send(joinCommand);
 						}
 					});
 				}
@@ -153,7 +167,7 @@ public class Main extends Application {
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
-		startClient("", 8888);
+		//startClient("", 8888);
 		launch(args);
 	}
 }

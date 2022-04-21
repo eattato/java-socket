@@ -62,6 +62,10 @@ public class Controller {
 		}
 	}
 	
+	public String getTextInput() {
+		return typer.getText();
+	}
+	
 	public void uiControl(HashMap<String, String> command) {
 		try {
 			String act = command.get("act");
@@ -94,7 +98,7 @@ public class Controller {
 				scrollObjects.add(joinPane);
 				
 				currentScroll += 62;
-			} else if (act.equals("send") == true || act.equals("recv") == true) {
+			} else if (act.equals("msg") == true || act.equals("selfmsg") == true) {
 				Pane chatPane = new Pane();
 				chatPane.setPrefWidth(816);
 				chatPane.setLayoutY(currentScroll);
@@ -105,14 +109,11 @@ public class Controller {
 				chatLabel.setPrefHeight(42);
 				
 				// ∫ª¿Œ
-				boolean isSelf = false;
-				if (param.equals("Eattato") == true) {
-					isSelf = true;
+				if (act.equals("selfmsg") == true) {
 					chatLabel.setLayoutX(684);
 					chatLabel.setStyle("-fx-background-color: yellow; -fx-background-radius: 15;");
 					
 				} else {
-					isSelf = false;
 					chatLabel.setLayoutX(70);
 					chatLabel.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
 				}
@@ -131,13 +132,13 @@ public class Controller {
 					
 					Text author = new Text();
 					Pane profileFrame = new Pane();
-					if (isSelf == false) {
-						author.setLayoutX(70);
-						profileFrame.setLayoutX(14);
-					} else {
+					if (param.equals(latest) == true) {
 						author.setTextAlignment(TextAlignment.RIGHT);
 						author.setLayoutX(511);
 						profileFrame.setLayoutX(743);
+					} else {
+						author.setLayoutX(70);
+						profileFrame.setLayoutX(14);
 					}
 					author.setLayoutY(23);
 					author.setText(param);
@@ -189,13 +190,24 @@ public class Controller {
 								double currentTextWidth = new Text(currentText).getLayoutBounds().getWidth();
 								chatLabel.setText(currentText);
 								chatLabel.setPrefWidth(currentTextWidth * (20 / 10) + 50);
+								if (act.equals("selfmsg") == true) {
+									chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
+								}
 								
 								if (effectTypef.equals("shake") == true) {
 									if (indexFinal != msgSplit.length - 1) {
-										chatLabel.setLayoutX(chatLabelOriX + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+										if (act.equals("selfmsg") == true) {
+											chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10) + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+										} else {
+											chatLabel.setLayoutX(chatLabelOriX + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+										}
 										chatLabel.setLayoutY(chatLabelOriY + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
 									} else {
-										chatLabel.setLayoutX(chatLabelOriX);
+										if (act.equals("selfmsg") == true) {
+											chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
+										} else {
+											chatLabel.setLayoutX(chatLabelOriX);
+										}
 										chatLabel.setLayoutY(chatLabelOriY);
 									}
 								}
