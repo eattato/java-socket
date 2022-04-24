@@ -1,5 +1,5 @@
 package application;
-	
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -60,15 +60,17 @@ public class Main extends Application {
 					while (true) {
 						// 서버 recv 코드랑 똑같음. 
 						@SuppressWarnings("unchecked")
-						HashMap<String, String> freight = (HashMap<String, String>) input.readObject();
+						var freight = (HashMap<String, String>) input.readObject();
 						
 						String act = freight.get("act");
 						if (act.equals("join") == true) {
 							controller.uiControl(freight);
 						}
 					}
-				} catch (Exception error) {
+				} catch (SocketException error) {
 					System.out.println("서버와의 접속이 끊어졌습니다.");
+				} catch (Exception error) {
+					error.printStackTrace();
 				}
 			}
 		};
@@ -77,18 +79,15 @@ public class Main extends Application {
 	
 	// 서버로 전송
 	public void send(HashMap<String, String> freight) {
-		Thread thread = new Thread() {
-			public void run() {
-				try {
-					output.writeObject(freight);
-					output.flush();
-					System.out.println(freight.get("act") + "를 보냄");
-				} catch (Exception error) {
-					error.printStackTrace();
-				}
-			}
-		};
-		thread.start();
+		try {
+			System.out.println(freight);
+			System.out.println(output);
+			output.writeObject(freight);
+			output.flush();
+			System.out.println(freight.get("act") + "를 보냄");
+		} catch (Exception error) {
+			error.printStackTrace();
+		}
 	}
 	
 	public void start(Stage primaryStage) {
@@ -102,7 +101,7 @@ public class Main extends Application {
 			
 			scene.setOnKeyPressed(event -> {
 				if (event.getCode() == KeyCode.ENTER) {
-					HashMap<String, String> msgSend = new HashMap<String, String>();
+					var msgSend = new HashMap<String, String>();
 					msgSend.put("act", "msg");
 					msgSend.put("msg", controller.getTextInput());
 					send(msgSend);
@@ -133,29 +132,23 @@ public class Main extends Application {
 					Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
-							HashMap<String, String> command = new HashMap<String, String>();
+							var command = new HashMap<String, String>();
 							command.put("act", "joinMessage");
 							command.put("param", "과로사");
 							//controller.uiControl(command);
 							
-							HashMap<String, String> command2 = new HashMap<String, String>();
+							var command2 = new HashMap<String, String>();
 							command2.put("act", "send");
 							command2.put("param", "과로사");
 							command2.put("msg", "오마에와 모 신데이루!!! 나니!!!!!!!!!!!!!!!!!!!!");
 							command2.put("effect", "shake 30");
 							//controller.uiControl(command2);
-							//controller.uiControl(command2);
 							
-							HashMap<String, String> serverCommand = new HashMap<String, String>();
+							var serverCommand = new HashMap<String, String>();
 							serverCommand.put("act", "create");
 							serverCommand.put("roomType", "justchat");
 							serverCommand.put("roomName", "뭉탱이를 위한 채팅");
 							send(serverCommand);
-							
-							HashMap<String, String> joinCommand = new HashMap<String, String>();
-							joinCommand.put("act", "join");
-							joinCommand.put("param", "0");
-							send(joinCommand);
 						}
 					});
 				}

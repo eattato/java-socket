@@ -122,142 +122,149 @@ public class Server {
 	public static void clientProcess(Client client, HashMap<String, String> order) {
 		int clientInd = clients.indexOf(client);
 		HashMap<String, String> clientInfo = clientData.get(clientInd);
-		
-		if (order.get("act") == "create") {
-			// 방 생성
-			
-			String roomType = order.get("roomType");
-			String roomName = order.get("roomName");
-			
-			String[] availableRoomType = {"justchat", "mafia", "wordbomb"};
-			
-			// 이미 참가되어있는지 확인
-			int joined = -1;
-			for (int room = 0; room < rooms.size(); room++) {
-				for (int cl = 0; room < rooms.get(room).size(); cl++) {
-					if (rooms.get(room).get(cl) == client) {
-						joined = room;
-					}
-				}
-			}
-			
-			if (joined == -1) {
-				if (roomType != null && roomName != null) {
-					boolean roomTypeFound = false;
-					for (int ind = 0; ind < availableRoomType.length; ind++) {
-						if (availableRoomType[ind].equals(roomType) == true) {
-							roomTypeFound = true;
-							break;
-						}
-					}
-					
-					if (roomTypeFound == true) {
-						ArrayList<Client> room = new ArrayList<>();
-						room.add(client);
-						rooms.add(room);
-						
-						HashMap<String, String> setting = new HashMap<>();
-						setting.put("roomName", roomName);
-						setting.put("roomType", roomType);
-						roomSetting.add(setting);
-						
-						// 만든 방에 클라이언트 참가시킴
-						HashMap<String, String> joinMap = new HashMap<>();
-						joinMap.put("param", Integer.toString(rooms.indexOf(room)));
-						clientProcess(client, joinMap);
-					} else {
-						System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 잘못된 방 타입");
-					}
-				} else {
-					System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 방 이름이나 방 타입이 정해지지 않았습니다");
-				}
-			} else {
-				System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 이미 참가되어 있습니다");
-			}
-		} else if (order.get("act") == "join") {
-			// 방 입장
-			
-			// 참가하는 방 인덱스 확인
-			int joiningRoom = -1;
-			if (order.get("param") != null) {
-				try {
-					joiningRoom = Integer.parseInt(order.get("param"));
-				} catch (NumberFormatException error) {
-					joiningRoom = -1;
-					System.out.println(clientInfo.get("identifier") + ": 방 입장에 실패하였습니다 - 잘못된 방 인덱스");
-				}
-			}
-			
-			// 이미 참가되어있는지 확인
-			int joined = -1;
-			for (int room = 0; room < rooms.size(); room++) {
-				for (int cl = 0; room < rooms.get(room).size(); cl++) {
-					if (rooms.get(room).get(cl) == client) {
-						joined = room;
-					}
-				}
-			}
-			
-			// 방에 참가가 안 되어있어야함
-			if (joined == -1 && joiningRoom != -1) {
-				// 클라이언트 소켓을 해당 방에 추가
-				rooms.get(joiningRoom).add(client);
-			} else {
-				System.out.println(clientInfo.get("identifier") + ": 방 입장에 실패하였습니다 - 이미 참가되어있거나 방을 찾을 수 없습니다");
-			}
-		} else if (order.get("act") == "leave") {
-			// 방 퇴장
-			
-			// 방에 참가되어 있는지 확인
-			int joined = -1;
-			for (int room = 0; room < rooms.size(); room++) {
-				for (int cl = 0; room < rooms.get(room).size(); cl++) {
-					if (rooms.get(room).get(cl) == client) {
-						joined = room;
-						rooms.get(room).remove(cl);
-						System.out.println(clientInfo.get("identifier") + ": 퇴장 - " + roomSetting.get(room).get("roomName"));
-					}
-				}
-			}
-			
-			// 참가되어 있지 않으면
-			if (joined == -1) {
-				System.out.println(clientInfo.get("identifier") + ": 방 퇴장에 실패하였습니다 - 참가되어 있지 않습니다");
-			}
-		} else if (order.get("act") == "type") {
-			// 타이핑
-		} else if (order.get("act") == "msg") {
-			// 메세지 송출
-			String msg = order.get("param");
-			if (msg != null) {
-				// 방에 참가가 되어있는지 확인
+		if (order.get("act") != null) {
+			System.out.println("요청: " + clientInfo + " - " + order.get("act"));
+			if (order.get("act").equals("create")) {
+				// 방 생성
+				String roomType = order.get("roomType");
+				String roomName = order.get("roomName");
+				
+				String[] availableRoomType = {"justchat", "mafia", "wordbomb"};
+				
+				// 이미 참가되어있는지 확인
 				int joined = -1;
 				for (int room = 0; room < rooms.size(); room++) {
-					for (int cl = 0; room < rooms.get(room).size(); cl++) {
+					for (int cl = 0; cl < rooms.get(room).size(); cl++) {
 						if (rooms.get(room).get(cl) == client) {
 							joined = room;
 						}
 					}
 				}
 				
-				// 참가가 되어있다면
-				if (joined != 1) {
-					ArrayList<Client> room = rooms.get(joined);
-					for (int cl = 0; cl < room.size(); cl++) {
-						HashMap<String, String> sendMsg = new HashMap<>();
-						sendMsg.put("param", clientInfo.get("username"));
-						sendMsg.put("msg", msg);
-						
-						if (room.get(cl) != client) {
-							// 보낸 본인이 아니라면
-							sendMsg.put("act", "msg");
-						} else {
-							sendMsg.put("act", "selfmsg");
+				if (joined == -1) {
+					if (roomType != null && roomName != null) {
+						boolean roomTypeFound = false;
+						for (int ind = 0; ind < availableRoomType.length; ind++) {
+							if (availableRoomType[ind].equals(roomType) == true) {
+								roomTypeFound = true;
+								break;
+							}
 						}
-						room.get(cl).send(sendMsg);
+						
+						if (roomTypeFound == true) {
+							ArrayList<Client> room = new ArrayList<>();
+							//room.add(client);
+							rooms.add(room);
+							
+							HashMap<String, String> setting = new HashMap<>();
+							setting.put("roomName", roomName);
+							setting.put("roomType", roomType);
+							roomSetting.add(setting);
+							System.out.println("방 생성: " + clientInfo);
+							
+							// 만든 방에 클라이언트 참가시킴
+							HashMap<String, String> joinMap = new HashMap<>();
+							joinMap.put("act", "join");
+							joinMap.put("param", Integer.toString(rooms.indexOf(room)));
+							clientProcess(client, joinMap);
+						} else {
+							System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 잘못된 방 타입");
+						}
+					} else {
+						System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 방 이름이나 방 타입이 정해지지 않았습니다");
+					}
+				} else {
+					System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 이미 참가되어 있습니다");
+				}
+			} else if (order.get("act").equals("join")) {
+				// 방 입장
+				
+				// 참가하는 방 인덱스 확인
+				int joiningRoom = -1;
+				if (order.get("param") != null) {
+					try {
+						joiningRoom = Integer.parseInt(order.get("param"));
+					} catch (NumberFormatException error) {
+						joiningRoom = -1;
+						System.out.println(clientInfo.get("identifier") + ": 방 입장에 실패하였습니다 - 잘못된 방 인덱스");
+					}
+				}
+				
+				// 이미 참가되어있는지 확인
+				int joined = -1;
+				for (int room = 0; room < rooms.size(); room++) {
+					for (int cl = 0; cl < rooms.get(room).size(); cl++) {
+						System.out.println("room checking " + room + " - " + cl);
+						if (rooms.get(room).get(cl) == client) {
+							joined = room;
+						}
+					}
+				}
+				
+				// 방에 참가가 안 되어있어야함
+				if (joined == -1 && joiningRoom != -1) {
+					// 클라이언트 소켓을 해당 방에 추가
+					rooms.get(joiningRoom).add(client);
+					System.out.println("참가: " + clientInfo + " - " + joiningRoom + ": " + roomSetting.get(joiningRoom).get("roomName"));
+				} else {
+					System.out.println(clientInfo.get("identifier") + ": 방 입장에 실패하였습니다 - 이미 참가되어있거나 방을 찾을 수 없습니다");
+				}
+			} else if (order.get("act").equals("leave")) {
+				// 방 퇴장
+				
+				// 방에 참가되어 있는지 확인
+				int joined = -1;
+				for (int room = 0; room < rooms.size(); room++) {
+					for (int cl = 0; room < rooms.get(room).size(); cl++) {
+						if (rooms.get(room).get(cl) == client) {
+							joined = room;
+							rooms.get(room).remove(cl);
+							System.out.println(clientInfo.get("identifier") + ": 퇴장 - " + roomSetting.get(room).get("roomName"));
+						}
+					}
+				}
+				
+				// 참가되어 있지 않으면
+				if (joined == -1) {
+					System.out.println(clientInfo.get("identifier") + ": 방 퇴장에 실패하였습니다 - 참가되어 있지 않습니다");
+				}
+			} else if (order.get("act").equals("type")) {
+				// 타이핑
+			} else if (order.get("act").equals("msg")) {
+				// 메세지 송출
+				String msg = order.get("param");
+				if (msg != null) {
+					// 방에 참가가 되어있는지 확인
+					int joined = -1;
+					for (int room = 0; room < rooms.size(); room++) {
+						for (int cl = 0; room < rooms.get(room).size(); cl++) {
+							if (rooms.get(room).get(cl) == client) {
+								joined = room;
+							}
+						}
+					}
+					
+					// 참가가 되어있다면
+					if (joined != 1) {
+						ArrayList<Client> room = rooms.get(joined);
+						for (int cl = 0; cl < room.size(); cl++) {
+							HashMap<String, String> sendMsg = new HashMap<>();
+							sendMsg.put("param", clientInfo.get("username"));
+							sendMsg.put("msg", msg);
+							
+							if (room.get(cl) != client) {
+								// 보낸 본인이 아니라면
+								sendMsg.put("act", "msg");
+							} else {
+								sendMsg.put("act", "selfmsg");
+							}
+							room.get(cl).send(sendMsg);
+						}
 					}
 				}
 			}
+		} else {
+			System.out.println("요청 실패: " + clientInfo + " - 요청 목적이 없습니다");
 		}
 	}
 }
