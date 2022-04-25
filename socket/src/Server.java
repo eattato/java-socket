@@ -237,7 +237,7 @@ public class Server {
 					// 방에 참가가 되어있는지 확인
 					int joined = -1;
 					for (int room = 0; room < rooms.size(); room++) {
-						for (int cl = 0; room < rooms.get(room).size(); cl++) {
+						for (int cl = 0; cl < rooms.get(room).size(); cl++) {
 							if (rooms.get(room).get(cl) == client) {
 								joined = room;
 							}
@@ -260,7 +260,12 @@ public class Server {
 							}
 							room.get(cl).send(sendMsg);
 						}
+						System.out.println("메세지 전송: " + clientInfo.get("identifier"));
+					} else {
+						System.out.println(clientInfo.get("identifier") + ": 메세지 전송에 실패하였습니다 - 참가되어 있지 않습니다");
 					}
+				} else {
+					System.out.println(clientInfo.get("identifier") + ": 메세지 전송에 실패하였습니다 - 보낼 메세지가 없습니다");
 				}
 			}
 		} else {

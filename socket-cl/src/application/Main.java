@@ -61,11 +61,13 @@ public class Main extends Application {
 						// 서버 recv 코드랑 똑같음. 
 						@SuppressWarnings("unchecked")
 						var freight = (HashMap<String, String>) input.readObject();
-						
-						String act = freight.get("act");
-						if (act.equals("join") == true) {
-							controller.uiControl(freight);
-						}
+						controller.uiControl(freight);
+						//String act = freight.get("act");
+						//if (act.equals("join") == true) {
+							//controller.uiControl(freight);
+						//} else if (act.equals("msg") == true) {
+							
+						//}
 					}
 				} catch (SocketException error) {
 					System.out.println("서버와의 접속이 끊어졌습니다.");
@@ -103,7 +105,7 @@ public class Main extends Application {
 				if (event.getCode() == KeyCode.ENTER) {
 					var msgSend = new HashMap<String, String>();
 					msgSend.put("act", "msg");
-					msgSend.put("msg", controller.getTextInput());
+					msgSend.put("param", controller.getTextInput());
 					send(msgSend);
 				}
 			});

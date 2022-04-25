@@ -67,158 +67,163 @@ public class Controller {
 	}
 	
 	public void uiControl(HashMap<String, String> command) {
-		try {
-			String act = command.get("act");
-			String param = command.get("param");
-			String msg = command.get("msg");
-			String effect = command.get("effect");
-			if (act.equals("joinMessage") == true || act.equals("leaveMessage") == true) {
-				latest = "System";
-				//scrollUp(60); // 전에 있던 UI 오브젝트들 모두 세로 사이즈만큼 위로
-				Pane joinPane = new Pane(); // 새 Pane 생성
-				joinPane.setLayoutX(0);
-				joinPane.setLayoutY(currentScroll);
-				joinPane.setPrefWidth(816);
-				joinPane.setPrefHeight(62);
-				scrollFrame.getChildren().add(joinPane);
-				Label joinLabel = new Label();
-				if (act.equals("joinMessage") == true) {
-					joinLabel.setText(param + " 님이 입장하였습니다.");
-				} else {
-					joinLabel.setText(param + " 님이 퇴장하였습니다.");
-				}
-				joinLabel.setAlignment(Pos.CENTER); // 라벨 가운데 정렬
-				joinLabel.setLayoutX(144);
-				joinLabel.setLayoutY(16);
-				joinLabel.setPrefWidth(524);
-				joinLabel.setPrefHeight(31);
-				joinLabel.setStyle("-fx-background-color: #00000033; -fx-background-radius: 10;");
-				joinLabel.setFont(new Font("Hancom Gothic Regular", 15.0));
-				joinPane.getChildren().add(joinLabel);
-				scrollObjects.add(joinPane);
-				
-				currentScroll += 62;
-			} else if (act.equals("msg") == true || act.equals("selfmsg") == true) {
-				Pane chatPane = new Pane();
-				chatPane.setPrefWidth(816);
-				chatPane.setLayoutY(currentScroll);
-				Label chatLabel = new Label();
-				chatLabel.setAlignment(Pos.CENTER);
-				chatLabel.setFont(new Font("Hancom Gothic Regular", 20.0));
-				chatLabel.setPrefWidth(50);
-				chatLabel.setPrefHeight(42);
-				
-				// 본인
-				if (act.equals("selfmsg") == true) {
-					chatLabel.setLayoutX(684);
-					chatLabel.setStyle("-fx-background-color: yellow; -fx-background-radius: 15;");
-					
-				} else {
-					chatLabel.setLayoutX(70);
-					chatLabel.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
-				}
-				
-				// 평범한 말풍선
-				if (param.equals(latest) == true) {
-					currentScroll += 50;
-					chatLabel.setLayoutY(4);
-					chatPane.setPrefHeight(50);
-				} else {
-					// 프로필 포함 말풍선
-					latest = param;
-					currentScroll += 77;
-					chatLabel.setLayoutY(33);
-					chatPane.setPrefHeight(77);
-					
-					Text author = new Text();
-					Pane profileFrame = new Pane();
-					if (param.equals(latest) == true) {
-						author.setTextAlignment(TextAlignment.RIGHT);
-						author.setLayoutX(511);
-						profileFrame.setLayoutX(743);
-					} else {
-						author.setLayoutX(70);
-						profileFrame.setLayoutX(14);
-					}
-					author.setLayoutY(23);
-					author.setText(param);
-					author.setStrokeType(StrokeType.OUTSIDE);
-					author.setWrappingWidth(223);
-					author.setFont(new Font("Hancom Gothic Regular", 20.0));
-					chatPane.getChildren().add(author);
-					
-					profileFrame.setLayoutY(14);
-					profileFrame.setPrefWidth(48);
-					profileFrame.setPrefHeight(50);
-					profileFrame.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
-					chatPane.getChildren().add(profileFrame);
-				}
-				//chatLabel.setText(msg);
-				
-				chatPane.getChildren().add(chatLabel);
-				scrollFrame.getChildren().add(chatPane);
-				scrollObjects.add(chatPane);
-				
-				String effectType = "";
-				double effectStrength = 0;
-				if (effect != null) {
-					if (effect.split(" ").length == 2) {
-						effectType = effect.split(" ")[0];
-						effectStrength = Double.parseDouble(effect.split(" ")[1]);
-					}
-				}
-				final String effectTypef = effectType;
-				final double effectStrengthf = effectStrength;
-				
-				double chatLabelOriX = chatLabel.getLayoutX();
-				double chatLabelOriY = chatLabel.getLayoutY();
-				
-				String[] msgSplit = msg.split("");
-				Thread thread = new Thread() {
-					@Override
-					public void run() {
-						for (int ind = 0; ind < msgSplit.length; ind++ ) {
-							final int indexFinal = ind;
-							try {
-								Thread.sleep(500 / msgSplit.length);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String act = command.get("act");
+					String param = command.get("param");
+					String msg = command.get("msg");
+					String effect = command.get("effect");
+					if (act.equals("joinMessage") == true || act.equals("leaveMessage") == true) {
+						latest = "System";
+						//scrollUp(60); // 전에 있던 UI 오브젝트들 모두 세로 사이즈만큼 위로
+						Pane joinPane = new Pane(); // 새 Pane 생성
+						joinPane.setLayoutX(0);
+						joinPane.setLayoutY(currentScroll);
+						joinPane.setPrefWidth(816);
+						joinPane.setPrefHeight(62);
+						scrollFrame.getChildren().add(joinPane);
+						Label joinLabel = new Label();
+						if (act.equals("joinMessage") == true) {
+							joinLabel.setText(param + " 님이 입장하였습니다.");
+						} else {
+							joinLabel.setText(param + " 님이 퇴장하였습니다.");
+						}
+						joinLabel.setAlignment(Pos.CENTER); // 라벨 가운데 정렬
+						joinLabel.setLayoutX(144);
+						joinLabel.setLayoutY(16);
+						joinLabel.setPrefWidth(524);
+						joinLabel.setPrefHeight(31);
+						joinLabel.setStyle("-fx-background-color: #00000033; -fx-background-radius: 10;");
+						joinLabel.setFont(new Font("Hancom Gothic Regular", 15.0));
+						joinPane.getChildren().add(joinLabel);
+						scrollObjects.add(joinPane);
+						
+						currentScroll += 62;
+					} else if (act.equals("msg") == true || act.equals("selfmsg") == true) {
+						Pane chatPane = new Pane();
+						chatPane.setPrefWidth(816);
+						chatPane.setLayoutY(currentScroll);
+						Label chatLabel = new Label();
+						chatLabel.setAlignment(Pos.CENTER);
+						chatLabel.setFont(new Font("Hancom Gothic Regular", 20.0));
+						chatLabel.setPrefWidth(50);
+						chatLabel.setPrefHeight(42);
+						
+						// 본인
+						if (act.equals("selfmsg") == true) {
+							chatLabel.setLayoutX(684);
+							chatLabel.setStyle("-fx-background-color: yellow; -fx-background-radius: 15;");
+							
+						} else {
+							chatLabel.setLayoutX(70);
+							chatLabel.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
+						}
+						
+						// 평범한 말풍선
+						if (param.equals(latest) == true) {
+							currentScroll += 50;
+							chatLabel.setLayoutY(4);
+							chatPane.setPrefHeight(50);
+						} else {
+							// 프로필 포함 말풍선
+							latest = param;
+							currentScroll += 77;
+							chatLabel.setLayoutY(33);
+							chatPane.setPrefHeight(77);
+							
+							Text author = new Text();
+							Pane profileFrame = new Pane();
+							if (param.equals(latest) == true) {
+								author.setTextAlignment(TextAlignment.RIGHT);
+								author.setLayoutX(511);
+								profileFrame.setLayoutX(743);
+							} else {
+								author.setLayoutX(70);
+								profileFrame.setLayoutX(14);
 							}
-							Platform.runLater(() -> {
-								String currentText = chatLabel.getText() + msgSplit[indexFinal];
-								double currentTextWidth = new Text(currentText).getLayoutBounds().getWidth();
-								chatLabel.setText(currentText);
-								chatLabel.setPrefWidth(currentTextWidth * (20 / 10) + 50);
-								if (act.equals("selfmsg") == true) {
-									chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
-								}
-								
-								if (effectTypef.equals("shake") == true) {
-									if (indexFinal != msgSplit.length - 1) {
-										if (act.equals("selfmsg") == true) {
-											chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10) + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
-										} else {
-											chatLabel.setLayoutX(chatLabelOriX + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
-										}
-										chatLabel.setLayoutY(chatLabelOriY + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
-									} else {
+							author.setLayoutY(23);
+							author.setText(param);
+							author.setStrokeType(StrokeType.OUTSIDE);
+							author.setWrappingWidth(223);
+							author.setFont(new Font("Hancom Gothic Regular", 20.0));
+							chatPane.getChildren().add(author);
+							
+							profileFrame.setLayoutY(14);
+							profileFrame.setPrefWidth(48);
+							profileFrame.setPrefHeight(50);
+							profileFrame.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
+							chatPane.getChildren().add(profileFrame);
+						}
+						//chatLabel.setText(msg);
+						
+						chatPane.getChildren().add(chatLabel);
+						scrollFrame.getChildren().add(chatPane);
+						scrollObjects.add(chatPane);
+						
+						String effectType = "";
+						double effectStrength = 0;
+						if (effect != null) {
+							if (effect.split(" ").length == 2) {
+								effectType = effect.split(" ")[0];
+								effectStrength = Double.parseDouble(effect.split(" ")[1]);
+							}
+						}
+						final String effectTypef = effectType;
+						final double effectStrengthf = effectStrength;
+						
+						double chatLabelOriX = chatLabel.getLayoutX();
+						double chatLabelOriY = chatLabel.getLayoutY();
+						
+						String[] msgSplit = msg.split("");
+						Thread thread = new Thread() {
+							@Override
+							public void run() {
+								for (int ind = 0; ind < msgSplit.length; ind++ ) {
+									final int indexFinal = ind;
+									try {
+										Thread.sleep(500 / msgSplit.length);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									Platform.runLater(() -> {
+										String currentText = chatLabel.getText() + msgSplit[indexFinal];
+										double currentTextWidth = new Text(currentText).getLayoutBounds().getWidth();
+										chatLabel.setText(currentText);
+										chatLabel.setPrefWidth(currentTextWidth * (20 / 10) + 50);
 										if (act.equals("selfmsg") == true) {
 											chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
-										} else {
-											chatLabel.setLayoutX(chatLabelOriX);
 										}
-										chatLabel.setLayoutY(chatLabelOriY);
-									}
+										
+										if (effectTypef.equals("shake") == true) {
+											if (indexFinal != msgSplit.length - 1) {
+												if (act.equals("selfmsg") == true) {
+													chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10) + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+												} else {
+													chatLabel.setLayoutX(chatLabelOriX + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+												}
+												chatLabel.setLayoutY(chatLabelOriY + (new Random().nextDouble(effectStrengthf) - effectStrengthf / 2));
+											} else {
+												if (act.equals("selfmsg") == true) {
+													chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
+												} else {
+													chatLabel.setLayoutX(chatLabelOriX);
+												}
+												chatLabel.setLayoutY(chatLabelOriY);
+											}
+										}
+									});
 								}
-							});
-						}
+							}
+						};
+						thread.start();
 					}
-				};
-				thread.start();
+				} catch (Exception error) {
+					error.printStackTrace();
+				}
 			}
-		} catch (Exception error) {
-			error.printStackTrace();
-		}
+		});
 	}
 }
