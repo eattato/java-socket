@@ -159,6 +159,8 @@ public class Server {
 							HashMap<String, String> setting = new HashMap<>();
 							setting.put("roomName", roomName);
 							setting.put("roomType", roomType);
+							setting.put("roomOwner", clientData.get(clientInd).get("identifier"));
+							setting.put("roomPassword", "");
 							roomSetting.add(setting);
 							System.out.println("방 생성: " + clientInfo);
 							
@@ -202,10 +204,21 @@ public class Server {
 				}
 				
 				// 방에 참가가 안 되어있어야함
-				if (joined == -1 && joiningRoom != -1) {
-					// 클라이언트 소켓을 해당 방에 추가
-					rooms.get(joiningRoom).add(client);
-					System.out.println("참가: " + clientInfo + " - " + joiningRoom + ": " + roomSetting.get(joiningRoom).get("roomName"));
+				if (joined == -1 && joiningRoom != -1 && joiningRoom < rooms.size()) {
+					boolean pwDone = false;
+					if (roomSetting.get(joiningRoom).get("roomPassword").equals("") == true) {
+						pwDone = true;
+					} else if (roomSetting.get(joiningRoom).get("roomPassword").equals(order.get("password")) == true) {
+						pwDone = true;
+					}
+					
+					if (pwDone == true) {
+						// 클라이언트 소켓을 해당 방에 추가
+						rooms.get(joiningRoom).add(client);
+						System.out.println("참가: " + clientInfo + " - " + joiningRoom + ": " + roomSetting.get(joiningRoom).get("roomName"));
+					} else {
+						System.out.println(clientInfo.get("identifier") + ": 비밀번호가 일치하지 않습니다");
+					}
 				} else {
 					System.out.println(clientInfo.get("identifier") + ": 방 입장에 실패하였습니다 - 이미 참가되어있거나 방을 찾을 수 없습니다");
 				}
@@ -218,8 +231,7 @@ public class Server {
 					for (int cl = 0; room < rooms.get(room).size(); cl++) {
 						if (rooms.get(room).get(cl) == client) {
 							joined = room;
-							rooms.get(room).remove(cl);
-							System.out.println(clientInfo.get("identifier") + ": 퇴장 - " + roomSetting.get(room).get("roomName"));
+							break;
 						}
 					}
 				}
@@ -227,6 +239,30 @@ public class Server {
 				// 참가되어 있지 않으면
 				if (joined == -1) {
 					System.out.println(clientInfo.get("identifier") + ": 방 퇴장에 실패하였습니다 - 참가되어 있지 않습니다");
+				} else {
+					var room = rooms.get(joined);
+					room.remove(room.indexOf(client));
+					
+					// 인원 없는 방이면
+					if (room.size() <= 0) {
+						rooms.remove(joined); // 방 삭제
+					} else if (roomSetting.get(joined).get("roomOwner").equals(clientInfo.get("identifier"))) {
+						// 만약 방장으로 나간거라면
+						Client altClient = room.get(0); // 다음으로 들어온 사람으로 방장 넘김
+						roomSetting.get(joined).replace("roomOwner", clientData.get(clients.indexOf(altClient)).get("identifier"));
+					}
+					System.out.println(clientInfo.get("identifier") + ": 퇴장 - " + roomSetting.get(joined).get("roomName"));
+					
+					for (int cl = 0; cl < room.size(); cl++) {
+						HashMap<String, String> leaveMsg = new HashMap<>();
+						leaveMsg.put("act", "leave");
+						leaveMsg.put("param", clientInfo.get("username"));
+						
+						if (room.get(cl) != client) {
+							// 보낸 본인이 아니라면
+							room.get(cl).send(leaveMsg);
+						}
+					}
 				}
 			} else if (order.get("act").equals("type")) {
 				// 타이핑

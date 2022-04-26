@@ -22,6 +22,18 @@ public class Client {
 		
 	}
 	
+	public void disconnect() {
+		// 있던 방 나가기
+		HashMap<String, String> leave = new HashMap<>();
+		leave.put("act", "leave");
+		Server.clientProcess(Client.this, leave);
+		
+		int clInd = Server.clients.indexOf(Client.this);
+		Server.clientData.remove(clInd);
+		Server.clients.remove(clInd);
+		//Server.clients.remove(Client.this);
+	}
+	
 	// 클라이언트에서 입력 받음
 	public void recv() {
 		// 스레드 풀 사용을 위해 Runnable로 스레드 만듬
@@ -60,24 +72,9 @@ public class Client {
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
-						}						
-					}
-					
-					int clInd = Server.clients.indexOf(Client.this);
-					Server.clientData.remove(clInd);
-					Server.clients.remove(clInd);
-					
-					int joined = -1;
-					for (int room = 0; room < Server.rooms.size(); room++) {
-						for (int cl = 0; cl < Server.rooms.get(room).size(); cl++) {
-							if (Server.rooms.get(room).get(cl) == Client.this) {
-								joined = room;
-							}
+						} finally {
+							disconnect();
 						}
-					}
-					
-					if (joined != -1) {
-						Server.rooms.get(clInd).remove(Server.rooms.get(clInd).indexOf(Client.this));
 					}
 				}
 			}
@@ -94,11 +91,12 @@ public class Client {
 		} catch (Exception error) {
 			// 클라이언트와 연결이 끊김, 연결 종료
 			try {
-				Server.clients.remove(Client.this);
 				connection.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				disconnect();
 			}
 		}
 	}
