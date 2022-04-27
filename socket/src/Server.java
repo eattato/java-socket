@@ -119,6 +119,12 @@ public class Server {
 		}
 	}
 
+	public static void announcement(HashMap<String, String> order) {
+		for (int ind = 0; ind < clients.size(); ind++) {
+			clients.get(ind).send(order);
+		}
+	}
+	
 	public static void clientProcess(Client client, HashMap<String, String> order) {
 		int clientInd = clients.indexOf(client);
 		HashMap<String, String> clientInfo = clientData.get(clientInd);
@@ -163,6 +169,10 @@ public class Server {
 							setting.put("roomPassword", "");
 							roomSetting.add(setting);
 							System.out.println("방 생성: " + clientInfo);
+							
+							HashMap<String, String> allReload = new HashMap<>();
+							allReload.put("act", "reload");
+							announcement(allReload);
 							
 							// 만든 방에 클라이언트 참가시킴
 							HashMap<String, String> joinMap = new HashMap<>();

@@ -1,0 +1,12 @@
+-XX:+ShowCodeDetailsInExceptionMessages
+-agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:60227
+--module-path
+C:/Users/Administrator/Desktop/javafx-sdk-18/lib
+--add-modules=javafx.controls,javafx.fxml
+"-javaagent:C:\\Users\\Administrator\\eclipse\\java-2022-03\\eclipse\\configuration\\org.eclipse.osgi\\225\\0\\.cp\\lib\\javaagent-shaded.jar"
+-Dfile.encoding=MS949
+-p
+"C:\\Users\\Administrator\\.p2\\pool\\plugins\\org.eclipse.fx.ide.css.jfx8_3.7.0.202010120832.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx.base.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx.controls.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx.fxml.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx.graphics.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx.media.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx.swing.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx.web.jar;C:\\Users\\Administrator\\Desktop\\javafx-sdk-18\\lib\\javafx-swt.jar"
+-classpath
+"C:\\Users\\Administrator\\eclipse-workspace\\socket-cl\\bin"
+application.Main

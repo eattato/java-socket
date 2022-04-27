@@ -9,6 +9,7 @@ public class Client {
 	
 	public ObjectInputStream input;
 	public ObjectOutputStream output;
+	public String inputMode = "standard";
 	
 	Client(Socket connection) throws IOException {
 		this.connection = connection;
@@ -47,11 +48,27 @@ public class Client {
 					// while로 계속해서 입력을 받음
 					while (true) {
 						if (connection.isClosed() == false) {
-							var freight = (HashMap<String, String>) input.readObject();
-
-							// 서버에 클라이언트가 요청한 작업처리를 맏김
-							//System.out.println(freight.get("act") + "를 받음");
-							Server.clientProcess(Client.this, freight);
+							// 기본 입력 모드
+							if (inputMode.equals("standard") == true) {
+								var freight = (HashMap<String, String>) input.readObject();
+								
+								// 입력 모드 변경
+								if (freight.get("act").equals("inputMode") == true) {
+									inputMode = freight.get("param");
+								} else {
+									// 서버에 클라이언트가 요청한 작업처리를 맏김
+									//System.out.println(freight.get("act") + "를 받음");
+									Server.clientProcess(Client.this, freight);									
+								}
+							} else if (inputMode.equals("rooms") == true) {
+								// roomSetting 객체를 받음
+								var roomSetting = (ArrayList<HashMap<String, String>>) input.readObject();
+								
+								// 입력 모드 변경 (서버에서 룸 세팅을 한 방만 새로 만들고 키는 inputMode만 넣고 값은 바꿀 모드로 넣으면 바뀜)
+								if (roomSetting.get(0).containsKey("inputMode") && roomSetting.size() == 0 ) {
+									inputMode = roomSetting.get(0).get("inputMode");
+								}
+							}
 						} else {
 							System.out.println("통신을 종료합니다");
 							break;
