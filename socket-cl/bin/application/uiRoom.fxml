@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:controller="application.Controller" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="823.0" style="-fx-background-color: #FFFB7C;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:controller="application.ControllerRoom" fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="823.0" style="-fx-background-color: #FFFB7C;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Button fx:id="dict" layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="54.0" style="-fx-background-color: #FFBE32; -fx-background-radius: 0;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="사전">
          <font>

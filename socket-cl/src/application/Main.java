@@ -25,7 +25,13 @@ public class Main extends Application {
 	
 	public ObjectInputStream input;
 	public ObjectOutputStream output;
-	public Controller controller;
+	public ControllerMain controllerMain;
+	public ControllerRoom controllerRoom;
+	public Scene sceneMain;
+	public Scene sceneRoom;
+	public Stage stage;
+	
+	public HashMap<String, Scene> scenes = new HashMap<>();
 	
 	public void startClient(String ip, int port) {
 		try {
@@ -61,13 +67,47 @@ public class Main extends Application {
 						// 서버 recv 코드랑 똑같음. 
 						@SuppressWarnings("unchecked")
 						var freight = (HashMap<String, String>) input.readObject();
-						controller.uiControl(freight);
-						//String act = freight.get("act");
-						//if (act.equals("join") == true) {
-							//controller.uiControl(freight);
-						//} else if (act.equals("msg") == true) {
-							
-						//}
+						String act = freight.get("act");
+						String[] clientActs = {"join", "leave"};
+						String[] roomActs = {"joinMessage", "leaveMessage", "msg", "selfmsg"};
+						String[] mainActs = {"reload"};
+						int ind = 0;
+						
+						if (ind != -1) {
+							for (ind = 0; ind < clientActs.length; ind++) {
+								if (clientActs[ind].equals(act) == true) {
+									if (clientActs[ind].equals("join") == true) {
+										stage.setScene(sceneMain);
+										stage.show();
+									} else if (clientActs[ind].equals("leave") == true) {
+										stage.setScene(sceneRoom);
+										stage.show();
+									}
+									ind = -1;
+									break;
+								}
+							}
+						}
+						
+						if (ind != -1) {
+							for (ind = 0; ind < roomActs.length; ind++) {
+								if (roomActs[ind].equals(act) == true) {
+									controllerRoom.uiControl(freight);
+									ind = -1;
+									break;
+								}
+							}
+						}
+						
+						if (ind != -1) {
+							for (ind = 0; ind < mainActs.length; ind++) {
+								if (mainActs[ind].equals(act) == true) {
+									controllerMain.uiControl(freight);
+									ind = -1;
+									break;
+								}
+							}
+						}
 					}
 				} catch (SocketException error) {
 					System.out.println("서버와의 접속이 끊어졌습니다.");
@@ -92,70 +132,41 @@ public class Main extends Application {
 		}
 	}
 	
+	public FXMLLoader loadScene(String resource) {
+		FXMLLoader newLoader = null;
+		FXMLLoader fxml = new FXMLLoader(getClass().getResource(resource));
+		newLoader = fxml;
+		return newLoader;
+	}
 	public void start(Stage primaryStage) {
 		startClient("", 8888);
 		
 		try {
-			FXMLLoader fxml = new FXMLLoader(getClass().getResource("ui.fxml"));
-			Parent root = fxml.load();
-			controller = (Controller)fxml.getController();
-			Scene scene = new Scene(root, 823, 534);
+			// 메인 씬 로드와 동시에 컨트롤러 가져오기
+			FXMLLoader fxmlMain = new FXMLLoader(getClass().getResource("uiMain.fxml"));
+			Parent rootMain = fxmlMain.load();
+			controllerMain = (ControllerMain) fxmlMain.getController();
+			sceneMain = new Scene(rootMain, 823, 534);
 			
-			scene.setOnKeyPressed(event -> {
+			FXMLLoader fxmlRoom = new FXMLLoader(getClass().getResource("uiRoom.fxml"));
+			Parent rootRoom = fxmlRoom.load();
+			controllerRoom = (ControllerRoom) fxmlRoom.getController();
+			sceneRoom = new Scene(rootRoom, 823, 534);
+			
+			sceneRoom.setOnKeyPressed(event -> {
 				if (event.getCode() == KeyCode.ENTER) {
 					var msgSend = new HashMap<String, String>();
 					msgSend.put("act", "msg");
-					msgSend.put("param", controller.getTextInput());
+					msgSend.put("param", controllerRoom.getTextInput());
 					send(msgSend);
 				}
 			});
 			
-			primaryStage.setScene(scene);
+			primaryStage.setScene(sceneMain);
 			primaryStage.show();
+			stage = primaryStage;
 			
-			// FXML 제어에는 그냥 스레드를 못 쓰기 때문에 FXML이 지원하는 runLater 사용
-			Thread thread = new Thread() {
-				@Override
-				public void run() {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							var command = new HashMap<String, String>();
-							command.put("act", "joinMessage");
-							command.put("param", "과로사");
-							//controller.uiControl(command);
-							
-							var command2 = new HashMap<String, String>();
-							command2.put("act", "send");
-							command2.put("param", "과로사");
-							command2.put("msg", "오마에와 모 신데이루!!! 나니!!!!!!!!!!!!!!!!!!!!");
-							command2.put("effect", "shake 30");
-							//controller.uiControl(command2);
-							
-							var serverCommand = new HashMap<String, String>();
-							serverCommand.put("act", "create");
-							serverCommand.put("roomType", "justchat");
-							serverCommand.put("roomName", "뭉탱이를 위한 채팅");
-							send(serverCommand);
-						}
-					});
-				}
-			};
-			thread.start();
+			// room create position
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

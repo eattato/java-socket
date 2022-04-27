@@ -17,7 +17,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-public class Controller {
+public class ControllerMain {
 	@FXML
 	private TextField typer;
 	

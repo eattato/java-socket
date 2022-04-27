@@ -25,7 +25,7 @@ public class test extends Application {
 		try {
 			FXMLLoader fxml = new FXMLLoader(getClass().getResource("ui.fxml"));
 			Parent root = fxml.load();
-			Controller controller = (Controller)fxml.getController();
+			ControllerRoom controller = (ControllerRoom)fxml.getController();
 			Scene scene = new Scene(root,823,534);
 			
 			primaryStage.setScene(scene);
