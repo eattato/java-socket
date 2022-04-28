@@ -134,6 +134,7 @@ public class Main extends Application {
 			fxmlMain.setRoot(this);
 			Parent rootMain = fxmlMain.load();
 			controllerMain = (ControllerMain) fxmlMain.getController();
+			controllerMain.setStage(primaryStage);
 			sceneMain = new Scene(rootMain, 823, 534);
 			
 			FXMLLoader fxmlRoom = new FXMLLoader(getClass().getResource("uiRoom.fxml"));

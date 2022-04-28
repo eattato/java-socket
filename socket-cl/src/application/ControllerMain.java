@@ -18,6 +18,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
 
 public class ControllerMain {
 	@FXML
@@ -50,6 +51,11 @@ public class ControllerMain {
 	private ArrayList<Pane> scrollObjects = new ArrayList<Pane>();
 	
 	private float currentScroll = 77;
+	
+	private Stage stage;
+	public void setStage(Stage pstage) {
+		stage = pstage;
+	}
 	
 	// UI Á¦¾î
 	public void scrollUp(int move) {
