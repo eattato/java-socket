@@ -1,4 +1,5 @@
 import java.net.*;
+import java.time.LocalTime;
 import java.io.*;
 import java.util.*;
 
@@ -13,10 +14,22 @@ public class Client {
 	
 	Client(Socket connection) throws IOException {
 		this.connection = connection;
+		Server.clients.add(Client.this);
+		String clientInfo = connection.getInetAddress().toString() + ":" + connection.getPort();
+		HashMap<String, String> clData = new HashMap<String, String>();
+		clData.put("identifier", clientInfo);
+		clData.put("username", "익명");
+		Server.clientData.add(clData);
+		System.out.println("접속: " + clientInfo);
+		
 		// 중요! inputStream은 연결된 outputStream이 나올 때까지 대기타다가 생성되기 때문에 input을 뒤에 두기
 		output = new ObjectOutputStream(connection.getOutputStream());
 		input = new ObjectInputStream(connection.getInputStream());
 		recv();
+		
+		HashMap<String, String> reloadMap = new HashMap<>();
+		reloadMap.put("act", "reload");
+		Server.clientProcess(Client.this, reloadMap);
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -43,7 +56,7 @@ public class Client {
 			@Override
 			// 스레드 실행
 			public void run() {
-				System.out.println(connection.getInetAddress() + "을 듣는중..");
+				System.out.println(connection.getInetAddress() + "을 듣는중.. " + LocalTime.now());
 				try {
 					// while로 계속해서 입력을 받음
 					while (true) {
@@ -51,7 +64,6 @@ public class Client {
 							// 기본 입력 모드
 							if (inputMode.equals("standard") == true) {
 								var freight = (HashMap<String, String>) input.readObject();
-								
 								// 입력 모드 변경
 								if (freight.get("act").equals("inputMode") == true) {
 									inputMode = freight.get("param");
@@ -104,6 +116,23 @@ public class Client {
 		try {
 			// 화물(행동 딕셔너리)을 보냄
 			output.writeObject(freight);
+			output.flush();
+		} catch (Exception error) {
+			// 클라이언트와 연결이 끊김, 연결 종료
+			try {
+				connection.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				disconnect();
+			}
+		}
+	}
+	
+	public void sendRoom(ArrayList<HashMap<String, String>> roomSetting) {
+		try {
+			output.writeObject(roomSetting);
 			output.flush();
 		} catch (Exception error) {
 			// 클라이언트와 연결이 끊김, 연결 종료

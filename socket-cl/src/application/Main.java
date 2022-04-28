@@ -10,6 +10,7 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 import java.net.*;
+import java.time.LocalTime;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ public class Main extends Application {
 	public Scene sceneRoom;
 	public Stage stage;
 	
+	public String inputMode = "standard";
+	
 	public HashMap<String, Scene> scenes = new HashMap<>();
 	
 	public void startClient(String ip, int port) {
@@ -43,6 +46,7 @@ public class Main extends Application {
 			input = new ObjectInputStream(connection.getInputStream());
 			System.out.println("서버 입출력 스트림 로딩 완료");
 			recv();
+			//System.out.println("클라이언트 리로드 완료");
 		} catch (Exception error) {
 			error.printStackTrace();
 		}
@@ -61,50 +65,37 @@ public class Main extends Application {
 	public void recv() {
 		// 클라이언트 측에선 어차피 recv 스레드밖에 없으니 걍 스레드 풀 안 씀
 		Thread thread = new Thread() {
+			@SuppressWarnings("unchecked")
 			public void run() {
 				try {
 					while (true) {
-						// 서버 recv 코드랑 똑같음. 
-						@SuppressWarnings("unchecked")
-						var freight = (HashMap<String, String>) input.readObject();
-						String act = freight.get("act");
-						String[] clientActs = {"join", "leave"};
-						String[] roomActs = {"joinMessage", "leaveMessage", "msg", "selfmsg"};
-						String[] mainActs = {"reload"};
-						int ind = 0;
-						
-						if (ind != -1) {
-							for (ind = 0; ind < clientActs.length; ind++) {
-								if (clientActs[ind].equals(act) == true) {
-									if (clientActs[ind].equals("join") == true) {
-										stage.setScene(sceneMain);
-										stage.show();
-									} else if (clientActs[ind].equals("leave") == true) {
-										stage.setScene(sceneRoom);
-										stage.show();
+						// 서버 recv 코드랑 똑같음
+						if (inputMode.equals("standard") == true) {
+							var freight = (HashMap<String, String>) input.readObject();
+							
+							// 입력 모드 변경
+							if (freight.get("act").equals("inputMode") == true) {
+								inputMode = freight.get("param");
+								System.out.println("입력 모드 변경: " + inputMode);
+							} else {
+								controllerRoom.uiControl(freight);
+							}
+						} else if (inputMode.equals("rooms") == true) {
+							// roomSetting 객체를 받음
+							var roomSetting = (ArrayList<HashMap<String, String>>) input.readObject();
+							
+							// 입력 모드 변경 (서버에서 룸 세팅을 한 방만 새로 만들고 키는 inputMode만 넣고 값은 바꿀 모드로 넣으면 바뀜)
+							if (roomSetting.size() >= 1) {
+								if (roomSetting.get(0).containsKey("inputMode") && roomSetting.size() == 1 ) {
+									inputMode = roomSetting.get(0).get("inputMode");
+									System.out.println("입력 모드 변경: " + inputMode);
+								} else {
+									for (int ind = 0; ind < roomSetting.size(); ind++) {
+										HashMap<String, String> roomMap = roomSetting.get(ind);
+										roomMap.put("act", "room");
+										controllerMain.uiControl(roomMap);
 									}
-									ind = -1;
-									break;
-								}
-							}
-						}
-						
-						if (ind != -1) {
-							for (ind = 0; ind < roomActs.length; ind++) {
-								if (roomActs[ind].equals(act) == true) {
-									controllerRoom.uiControl(freight);
-									ind = -1;
-									break;
-								}
-							}
-						}
-						
-						if (ind != -1) {
-							for (ind = 0; ind < mainActs.length; ind++) {
-								if (mainActs[ind].equals(act) == true) {
-									controllerMain.uiControl(freight);
-									ind = -1;
-									break;
+									
 								}
 							}
 						}
@@ -122,11 +113,9 @@ public class Main extends Application {
 	// 서버로 전송
 	public void send(HashMap<String, String> freight) {
 		try {
-			System.out.println(freight);
-			System.out.println(output);
-			output.writeObject(freight);
+			//System.out.println(freight.get("act") + "를 보내는 중.. " + LocalTime.now());
 			output.flush();
-			System.out.println(freight.get("act") + "를 보냄");
+			System.out.println(freight.get("act") + "를 보냄 " + LocalTime.now());
 		} catch (Exception error) {
 			error.printStackTrace();
 		}
@@ -139,11 +128,10 @@ public class Main extends Application {
 		return newLoader;
 	}
 	public void start(Stage primaryStage) {
-		startClient("", 8888);
-		
 		try {
 			// 메인 씬 로드와 동시에 컨트롤러 가져오기
 			FXMLLoader fxmlMain = new FXMLLoader(getClass().getResource("uiMain.fxml"));
+			fxmlMain.setRoot(this);
 			Parent rootMain = fxmlMain.load();
 			controllerMain = (ControllerMain) fxmlMain.getController();
 			sceneMain = new Scene(rootMain, 823, 534);
@@ -170,6 +158,7 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		startClient("", 8888);
 	}
 	
 	public static void main(String[] args) throws InterruptedException {

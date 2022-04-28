@@ -38,6 +38,19 @@ public class Server {
 				System.out.println("서버가 " + ip + ":" + port + "에서 열렸습니다.");
 			}
 			
+			
+			ArrayList<Client> room = new ArrayList<>();
+			//room.add(client);
+			rooms.add(room);
+			HashMap<String, String> setting = new HashMap<>();
+			setting.put("roomName", "이지맨");
+			setting.put("roomType", "justchat");
+			setting.put("roomCapacity", "3");
+			setting.put("roomOwner", "system");
+			setting.put("roomPassword", "");
+			roomSetting.add(setting);
+			
+			
 			Runnable thread = new Runnable() {
 				@Override
 				public void run() {
@@ -46,6 +59,7 @@ public class Server {
 						while (true) {
 							String cmd = cmdInput.readLine();
 							if (cmd.equals("shutdown") == true) {
+								System.out.println("명령으로 인해 서버를 종료합니다.");
 								shutdown();
 							}
 						}
@@ -64,20 +78,14 @@ public class Server {
 						// 클라이언트 연결 요청 수락
 						Socket connection = server.accept();
 						Client client = new Client(connection);
-						clients.add(client);
 						
-						String clientInfo = connection.getInetAddress().toString() + ":" + connection.getPort();
-						
-						HashMap<String, String> clData = new HashMap<String, String>();
-						clData.put("identifier", clientInfo);
-						clData.put("username", "익명");
-						clientData.add(clData);
 						//System.out.println("접속: " + (InetSocketAddress)connection.getRemoteSocketAddress());
-						System.out.println("접속: " + clientInfo);
 					}
 				}
 			} catch (Exception error) {
 				if (server.isClosed() == false) {
+					System.out.println("소켓 종료로 서버를 종료합니다.");
+					error.printStackTrace();
 					shutdown();
 				}
 				System.out.println("서버 소켓 상태: " + server.isClosed());
@@ -87,6 +95,7 @@ public class Server {
 			error.printStackTrace();
 			// 서버에 오류 났는데 열려있으면 닫기
 			if (server.isClosed() == false) {
+				System.out.println("서버 오류로 서버를 종료합니다.");
 				shutdown();
 			}
 		}
@@ -125,6 +134,46 @@ public class Server {
 		}
 	}
 	
+	public static void sendRoomDatas() {
+		ArrayList<HashMap<String, String>> roomsCopy = new ArrayList<>();
+		
+		for (int ind = 0; ind < roomSetting.size(); ind++) {
+			HashMap<String, String> originalSetting = roomSetting.get(ind);
+			HashMap<String, String> settingCopy = new HashMap<>();
+			settingCopy.put("current", Integer.toString(rooms.get(ind).size()));
+			settingCopy.put("roomInd", Integer.toString(ind));
+			originalSetting.forEach((key, val) -> {
+				if (key.equals("password") == false) {
+					settingCopy.put(key, val);
+				} else {
+					// 비번 안 걸린 방이면 비번 false로 바꿔서 클라이언트 줌
+					if (originalSetting.get("password").equals("") == true) {
+						settingCopy.put(key, "false");
+					} else {
+						// 비번 걸려 있는 방이면 비번 true로 바꿔서 클라이언트 줌
+						settingCopy.put(key, "true");
+					}
+				}
+			});
+			roomsCopy.add(settingCopy);
+		}
+		
+		for (int ind = 0; ind < clients.size(); ind++) {
+			HashMap<String, String> inputModeRooms = new HashMap<>();
+			inputModeRooms.put("act", "inputMode");
+			inputModeRooms.put("param", "rooms");
+			ArrayList<HashMap<String, String>> inputModeStandard = new ArrayList<>();
+			HashMap<String, String> inputModeStandardSetting = new HashMap<>();
+			inputModeStandardSetting.put("inputMode", "standard");
+			inputModeStandard.add(inputModeStandardSetting);
+			
+			Client client = clients.get(ind);
+			client.send(inputModeRooms); // 클라이언트 인풋 모드 방 설정 전송 모드로 변경
+			client.sendRoom(roomsCopy); // 클라이언트로 방 설정들 보냄
+			client.sendRoom(inputModeStandard); // 클라이언트 인풋 모드 원상복구
+		}
+	}
+	
 	public static void clientProcess(Client client, HashMap<String, String> order) {
 		int clientInd = clients.indexOf(client);
 		HashMap<String, String> clientInfo = clientData.get(clientInd);
@@ -134,6 +183,13 @@ public class Server {
 				// 방 생성
 				String roomType = order.get("roomType");
 				String roomName = order.get("roomName");
+				String roomCapacity = order.get("roomCapacity");
+				int capacity = 0;
+				try {
+					capacity = Integer.parseInt(roomCapacity);					
+				} catch (Exception error) {
+					
+				}
 				
 				String[] availableRoomType = {"justchat", "mafia", "wordbomb"};
 				
@@ -148,7 +204,7 @@ public class Server {
 				}
 				
 				if (joined == -1) {
-					if (roomType != null && roomName != null) {
+					if (roomType != null && roomName != null && capacity >= 1) {
 						boolean roomTypeFound = false;
 						for (int ind = 0; ind < availableRoomType.length; ind++) {
 							if (availableRoomType[ind].equals(roomType) == true) {
@@ -165,14 +221,11 @@ public class Server {
 							HashMap<String, String> setting = new HashMap<>();
 							setting.put("roomName", roomName);
 							setting.put("roomType", roomType);
+							setting.put("roomCapacity", roomCapacity);
 							setting.put("roomOwner", clientData.get(clientInd).get("identifier"));
 							setting.put("roomPassword", "");
 							roomSetting.add(setting);
 							System.out.println("방 생성: " + clientInfo);
-							
-							HashMap<String, String> allReload = new HashMap<>();
-							allReload.put("act", "reload");
-							announcement(allReload);
 							
 							// 만든 방에 클라이언트 참가시킴
 							HashMap<String, String> joinMap = new HashMap<>();
@@ -206,7 +259,7 @@ public class Server {
 				int joined = -1;
 				for (int room = 0; room < rooms.size(); room++) {
 					for (int cl = 0; cl < rooms.get(room).size(); cl++) {
-						System.out.println("room checking " + room + " - " + cl);
+						//System.out.println("room checking " + room + " - " + cl);
 						if (rooms.get(room).get(cl) == client) {
 							joined = room;
 						}
@@ -223,9 +276,15 @@ public class Server {
 					}
 					
 					if (pwDone == true) {
-						// 클라이언트 소켓을 해당 방에 추가
-						rooms.get(joiningRoom).add(client);
-						System.out.println("참가: " + clientInfo + " - " + joiningRoom + ": " + roomSetting.get(joiningRoom).get("roomName"));
+						int capacity = Integer.parseInt(roomSetting.get(joiningRoom).get("roomCapacity"));
+						if (capacity > rooms.get(joiningRoom).size()) {
+							// 클라이언트 소켓을 해당 방에 추가
+							rooms.get(joiningRoom).add(client);
+							System.out.println("참가: " + clientInfo + " - " + joiningRoom + ": " + roomSetting.get(joiningRoom).get("roomName"));
+							sendRoomDatas();
+						} else {
+							System.out.println(clientInfo.get("identifier") + ": 방이 꽉 찼습니다");
+						}
 					} else {
 						System.out.println(clientInfo.get("identifier") + ": 비밀번호가 일치하지 않습니다");
 					}
@@ -262,6 +321,7 @@ public class Server {
 						roomSetting.get(joined).replace("roomOwner", clientData.get(clients.indexOf(altClient)).get("identifier"));
 					}
 					System.out.println(clientInfo.get("identifier") + ": 퇴장 - " + roomSetting.get(joined).get("roomName"));
+					sendRoomDatas();
 					
 					for (int cl = 0; cl < room.size(); cl++) {
 						HashMap<String, String> leaveMsg = new HashMap<>();
@@ -313,6 +373,40 @@ public class Server {
 				} else {
 					System.out.println(clientInfo.get("identifier") + ": 메세지 전송에 실패하였습니다 - 보낼 메세지가 없습니다");
 				}
+			} else if (order.get("act").equals("reload")) {
+				ArrayList<HashMap<String, String>> roomsCopy = new ArrayList<>();
+				
+				for (int ind = 0; ind < roomSetting.size(); ind++) {
+					HashMap<String, String> originalSetting = roomSetting.get(ind);
+					HashMap<String, String> settingCopy = new HashMap<>();
+					settingCopy.put("current", Integer.toString(rooms.get(ind).size()));
+					originalSetting.forEach((key, val) -> {
+						if (key.equals("password") == false) {
+							settingCopy.put(key, val);
+						} else {
+							// 비번 안 걸린 방이면 비번 false로 바꿔서 클라이언트 줌
+							if (originalSetting.get("password").equals("") == true) {
+								settingCopy.put(key, "false");
+							} else {
+								// 비번 걸려 있는 방이면 비번 true로 바꿔서 클라이언트 줌
+								settingCopy.put(key, "true");
+							}
+						}
+					});
+					roomsCopy.add(settingCopy);
+				}
+				
+				HashMap<String, String> inputModeRooms = new HashMap<>();
+				inputModeRooms.put("act", "inputMode");
+				inputModeRooms.put("param", "rooms");
+				ArrayList<HashMap<String, String>> inputModeStandard = new ArrayList<>();
+				HashMap<String, String> inputModeStandardSetting = new HashMap<>();
+				inputModeStandardSetting.put("inputMode", "standard");
+				inputModeStandard.add(inputModeStandardSetting);
+				
+				client.send(inputModeRooms); // 클라이언트 인풋 모드 방 설정 전송 모드로 변경
+				client.sendRoom(roomsCopy); // 클라이언트로 방 설정들 보냄
+				client.sendRoom(inputModeStandard); // 클라이언트 인풋 모드 원상복구
 			}
 		} else {
 			System.out.println("요청 실패: " + clientInfo + " - 요청 목적이 없습니다");
