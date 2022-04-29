@@ -63,7 +63,9 @@ public class Client {
 						if (connection.isClosed() == false) {
 							// 기본 입력 모드
 							if (inputMode.equals("standard") == true) {
+								//System.out.println("기본 입력 듣기");
 								var freight = (HashMap<String, String>) input.readObject();
+								//System.out.println("입력 받음");
 								// 입력 모드 변경
 								if (freight.get("act").equals("inputMode") == true) {
 									inputMode = freight.get("param");

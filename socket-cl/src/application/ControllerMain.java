@@ -52,9 +52,9 @@ public class ControllerMain {
 	
 	private float currentScroll = 77;
 	
-	private Stage stage;
-	public void setStage(Stage pstage) {
-		stage = pstage;
+	private Main main;
+	public void setMain(Main mainset) {
+		main = mainset;
 	}
 	
 	// UI Á¦¾î
@@ -82,6 +82,8 @@ public class ControllerMain {
 					String msg = command.get("msg");
 					String effect = command.get("effect");
 					if (act.equals("room") == true) {
+						currentScroll = 0;
+						
 						for (int ind = 0; ind < scrollObjects.size(); ind++) {
 							scrollFrame.getChildren().remove(scrollObjects.get(ind));
 						}
@@ -149,7 +151,10 @@ public class ControllerMain {
 						roomJoin.setOnAction(new EventHandler<ActionEvent>() {
 							@Override
 							public void handle(ActionEvent event) {
-								
+								HashMap<String, String> joinMap = new HashMap<>();
+								joinMap.put("act", "join");
+								joinMap.put("param", command.get("roomInd"));
+								main.send(joinMap);
 							}
 						});
 						roomPane.getChildren().add(roomJoin);

@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.Random;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -51,6 +53,22 @@ public class ControllerRoom {
 	
 	private String latest = "System";
 	
+	private Main main;
+	public void setMain(Main mainset) {
+		main = mainset;
+	}
+	
+	public void leaveButton() {
+		leave.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				HashMap<String, String> leaveMap = new HashMap<>();
+				leaveMap.put("act", "leave");
+				main.send(leaveMap);
+			}
+		});
+	}
+	
 	// UI 제어
 	public void scrollUp(int move) {
 		// 스크롤에 있는 모든 오브젝트 move만큼 위로 이동
@@ -64,6 +82,10 @@ public class ControllerRoom {
 	
 	public String getTextInput() {
 		return typer.getText();
+	}
+	
+	public void resetTextInput() {
+		typer.setText("");
 	}
 	
 	public void uiControl(HashMap<String, String> command) {
@@ -102,6 +124,9 @@ public class ControllerRoom {
 						
 						currentScroll += 62;
 					} else if (act.equals("msg") == true || act.equals("selfmsg") == true) {
+						// 보낸 이 identifier
+						String identifier = command.get("author");
+						
 						Pane chatPane = new Pane();
 						chatPane.setPrefWidth(816);
 						chatPane.setLayoutY(currentScroll);
@@ -122,20 +147,20 @@ public class ControllerRoom {
 						}
 						
 						// 평범한 말풍선
-						if (param.equals(latest) == true) {
+						if (identifier.equals(latest) == true) {
 							currentScroll += 50;
 							chatLabel.setLayoutY(4);
 							chatPane.setPrefHeight(50);
 						} else {
 							// 프로필 포함 말풍선
-							latest = param;
+							latest = identifier;
 							currentScroll += 77;
 							chatLabel.setLayoutY(33);
 							chatPane.setPrefHeight(77);
 							
 							Text author = new Text();
 							Pane profileFrame = new Pane();
-							if (param.equals(latest) == true) {
+							if (act.equals("selfmsg") == true) {
 								author.setTextAlignment(TextAlignment.RIGHT);
 								author.setLayoutX(511);
 								profileFrame.setLayoutX(743);
@@ -219,6 +244,18 @@ public class ControllerRoom {
 							}
 						};
 						thread.start();
+					} else if (act.equals("join") == true) {
+						currentScroll = 0;
+						
+						// 스크롤 프레임에 있는 엘레먼트 모두 삭제
+						for (int ind = 0; ind < scrollObjects.size(); ind++) {
+							scrollFrame.getChildren().remove(scrollObjects.get(ind));
+						}
+						scrollObjects = new ArrayList<Pane>();
+						
+						roomName.setText(command.get("roomName"));
+						roomSetting.setText(command.get("roomSetting"));
+						roomAdmits.setText(command.get("roomCurrent") + " / " + command.get("roomCapacity"));
 					}
 				} catch (Exception error) {
 					error.printStackTrace();

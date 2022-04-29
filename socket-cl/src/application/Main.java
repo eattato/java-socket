@@ -72,13 +72,42 @@ public class Main extends Application {
 						// 서버 recv 코드랑 똑같음
 						if (inputMode.equals("standard") == true) {
 							var freight = (HashMap<String, String>) input.readObject();
+							//System.out.println("서버로부터 입력받음!");
 							
 							// 입력 모드 변경
 							if (freight.get("act").equals("inputMode") == true) {
 								inputMode = freight.get("param");
 								System.out.println("입력 모드 변경: " + inputMode);
 							} else {
-								controllerRoom.uiControl(freight);
+								if (freight.get("act").equals("join") == true || freight.get("act").equals("leave") == true) {
+									if (freight.get("act").equals("join") == true) {
+										HashMap<String, String> joinMap = new HashMap<>();
+										joinMap.put("act", "join");
+										joinMap.put("roomName", freight.get("roomName"));
+										joinMap.put("roomSetting", freight.get("roomSetting"));
+										joinMap.put("roomCurrent", freight.get("roomCurrent"));
+										joinMap.put("roomCapacity", freight.get("roomCapacity"));
+										controllerRoom.uiControl(joinMap);
+										Platform.runLater(new Runnable() {
+											@Override
+											public void run() {
+												stage.setScene(sceneRoom);
+												stage.show();
+											}
+										});
+									} else {
+										// 나가면 서버가 자동으로 모든 클라이언트에 리로드하니 굳이 리로드 x
+										Platform.runLater(new Runnable() {
+											@Override
+											public void run() {
+												stage.setScene(sceneMain);
+												stage.show();
+											}
+										});
+									}
+								} else {
+									controllerRoom.uiControl(freight);
+								}
 							}
 						} else if (inputMode.equals("rooms") == true) {
 							// roomSetting 객체를 받음
@@ -114,6 +143,7 @@ public class Main extends Application {
 	public void send(HashMap<String, String> freight) {
 		try {
 			//System.out.println(freight.get("act") + "를 보내는 중.. " + LocalTime.now());
+			output.writeObject(freight);
 			output.flush();
 			System.out.println(freight.get("act") + "를 보냄 " + LocalTime.now());
 		} catch (Exception error) {
@@ -131,15 +161,18 @@ public class Main extends Application {
 		try {
 			// 메인 씬 로드와 동시에 컨트롤러 가져오기
 			FXMLLoader fxmlMain = new FXMLLoader(getClass().getResource("uiMain.fxml"));
-			fxmlMain.setRoot(this);
 			Parent rootMain = fxmlMain.load();
+			//controllerMain = new ControllerMain();
 			controllerMain = (ControllerMain) fxmlMain.getController();
-			controllerMain.setStage(primaryStage);
+			controllerMain.setMain(Main.this);
+			//fxmlMain.setController(controllerMain);
 			sceneMain = new Scene(rootMain, 823, 534);
 			
 			FXMLLoader fxmlRoom = new FXMLLoader(getClass().getResource("uiRoom.fxml"));
 			Parent rootRoom = fxmlRoom.load();
 			controllerRoom = (ControllerRoom) fxmlRoom.getController();
+			controllerRoom.setMain(Main.this);
+			controllerRoom.leaveButton();
 			sceneRoom = new Scene(rootRoom, 823, 534);
 			
 			sceneRoom.setOnKeyPressed(event -> {
@@ -148,6 +181,7 @@ public class Main extends Application {
 					msgSend.put("act", "msg");
 					msgSend.put("param", controllerRoom.getTextInput());
 					send(msgSend);
+					controllerRoom.resetTextInput();
 				}
 			});
 			
@@ -159,6 +193,17 @@ public class Main extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("메인 컨트롤러 대기 중..");
+		while (controllerMain == null) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		System.out.println("메인 컨트롤러 로드 완료");
 		startClient("", 8888);
 	}
 	
