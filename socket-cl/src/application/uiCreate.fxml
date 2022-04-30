@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:controller="application.ControllerCreate" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="823.0" style="-fx-background-color: #FFFB7C;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Text fx:id="roomName" layoutX="14.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="방 생성" wrappingWidth="223.6513671875">
+         <font>
+            <Font name="Hancom Gothic Regular" size="24.0" />
+         </font>
+      </Text>
+      <Button fx:id="cancel" layoutX="723.0" layoutY="6.0" mnemonicParsing="false" prefHeight="41.0" prefWidth="94.0" style="-fx-background-color: red; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: darkred; -fx-border-width: 2;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="취소">
+         <font>
+            <Font name="Hancom Gothic Regular" size="20.0" />
+         </font>
+      </Button>
+      <Button fx:id="create" layoutX="615.0" layoutY="6.0" mnemonicParsing="false" prefHeight="41.0" prefWidth="94.0" style="-fx-background-color: #89F519; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: #2BBB13; -fx-border-width: 2;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="생성">
+         <font>
+            <Font name="Hancom Gothic Regular" size="20.0" />
+         </font>
+      </Button>
+      <Pane layoutY="54.0" prefHeight="480.0" prefWidth="823.0" style="-fx-background-color: #88FA5A;">
+         <children>
+            <Text layoutX="25.0" layoutY="250.0" strokeType="OUTSIDE" strokeWidth="0.0" text="방 타입" wrappingWidth="213.12109375">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </Text>
+            <Button fx:id="typeChat" layoutX="25.0" layoutY="265.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: white; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="채팅">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </Button>
+            <Button fx:id="typeWord" layoutX="115.0" layoutY="265.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: lightgray; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="끝말잇기">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="15.0" />
+               </font>
+            </Button>
+            <Button fx:id="typeMafia" layoutX="205.0" layoutY="265.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: lightgray; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="마피아">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="18.0" />
+               </font>
+            </Button>
+            <Text layoutX="25.0" layoutY="360.0" strokeType="OUTSIDE" strokeWidth="0.0" text="방 설정" wrappingWidth="213.12109375">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </Text>
+            <Text layoutX="25.0" layoutY="40.0" strokeType="OUTSIDE" strokeWidth="0.0" text="방 이름" wrappingWidth="213.12109375">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </Text>
+            <Text layoutX="25.0" layoutY="150.0" strokeType="OUTSIDE" strokeWidth="0.0" text="최대 인원" wrappingWidth="81.0">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </Text>
+            <TextField fx:id="capacity" alignment="CENTER" layoutX="25.0" layoutY="165.0" prefHeight="45.0" prefWidth="81.0" style="-fx-background-radius: 12px; -fx-border-radius: 12px; -fx-border-width: 1;" text="10">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="password" alignment="CENTER" layoutX="125.0" layoutY="165.0" prefHeight="45.0" prefWidth="81.0" promptText="비밀번호" style="-fx-background-radius: 12px; -fx-border-radius: 12px; -fx-border-width: 1;">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="16.0" />
+               </font>
+            </TextField>
+            <Text layoutX="125.0" layoutY="150.0" strokeType="OUTSIDE" strokeWidth="0.0" text="비밀번호" wrappingWidth="81.0">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </Text>
+            <TextField fx:id="name" layoutX="25.0" layoutY="55.0" prefHeight="45.0" prefWidth="259.0" promptText="방 이름을 입력하세요" style="-fx-background-radius: 12px; -fx-border-radius: 12px; -fx-border-width: 1;">
+               <font>
+                  <Font name="Hancom Gothic Regular" size="20.0" />
+               </font>
+            </TextField>
+            <Pane fx:id="chatSetting" layoutY="375.0" prefHeight="107.0" prefWidth="823.0">
+               <children>
+                  <Text layoutX="35.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="익명" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Text>
+                  <Button fx:id="chatAnonymous" layoutX="35.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: lightgray; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="OFF">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="chatSlowmode" layoutX="135.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: white; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+                  <Text layoutX="135.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="슬로우모드" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="17.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="235.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="파일 전송" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="18.0" />
+                     </font>
+                  </Text>
+                  <Button fx:id="chatFilesend" layoutX="235.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: lightgray; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="OFF">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+               </children>
+            </Pane>
+            <Pane fx:id="wordSetting" layoutY="375.0" prefHeight="107.0" prefWidth="823.0" visible="false">
+               <children>
+                  <Text layoutX="35.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="이건 킹정" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="18.0" />
+                     </font>
+                  </Text>
+                  <Button fx:id="wordOkword" layoutX="35.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: lightgray; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="OFF">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="wordNokill" layoutX="135.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: lightgray; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="OFF">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+                  <Text layoutX="135.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="한방 금지" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="18.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="235.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="제한 시간" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="18.0" />
+                     </font>
+                  </Text>
+                  <Button fx:id="wordTimer" layoutX="235.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: white; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="60">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+               </children>
+            </Pane>
+            <Pane fx:id="mafiaSetting" layoutY="375.0" prefHeight="107.0" prefWidth="823.0" visible="false">
+               <children>
+                  <Text layoutX="35.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="시민 직업" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="18.0" />
+                     </font>
+                  </Text>
+                  <Button fx:id="mafiaCitizen" layoutX="35.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: white; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="ON">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="mafiaEnemy" layoutX="135.0" layoutY="35.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="81.0" style="-fx-background-color: white; -fx-background-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="1">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+                  <Text layoutX="135.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="마피아 인원" textAlignment="CENTER" wrappingWidth="81.0">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="16.0" />
+                     </font>
+                  </Text>
+               </children>
+            </Pane>
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>

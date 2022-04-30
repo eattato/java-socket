@@ -31,6 +31,9 @@ public class ControllerMain {
 	private Pane scrollFrame;
 	
 	@FXML
+	private Button create;
+	
+	@FXML
 	private Button dict;
 	
 	@FXML
@@ -57,6 +60,16 @@ public class ControllerMain {
 		main = mainset;
 	}
 	
+	public void createButton() {
+		create.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				main.stage.setScene(main.sceneCreate);
+				main.stage.show();
+			}
+		});
+	}
+	
 	// UI 제어
 	public void scrollUp(int move) {
 		// 스크롤에 있는 모든 오브젝트 move만큼 위로 이동
@@ -81,14 +94,14 @@ public class ControllerMain {
 					String param = command.get("param");
 					String msg = command.get("msg");
 					String effect = command.get("effect");
-					if (act.equals("room") == true) {
+					if (act.equals("reload") == true) {
 						currentScroll = 0;
 						
 						for (int ind = 0; ind < scrollObjects.size(); ind++) {
 							scrollFrame.getChildren().remove(scrollObjects.get(ind));
 						}
 						scrollObjects = new ArrayList<Pane>();
-						
+					} else if (act.equals("room") == true) {
 						//scrollUp(60); // 전에 있던 UI 오브젝트들 모두 세로 사이즈만큼 위로
 						Pane roomPane = new Pane(); // 새 Pane 생성
 						roomPane.setLayoutX(0);

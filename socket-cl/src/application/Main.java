@@ -28,13 +28,17 @@ public class Main extends Application {
 	public ObjectOutputStream output;
 	public ControllerMain controllerMain;
 	public ControllerRoom controllerRoom;
+	public ControllerCreate controllerCreate;
 	public Scene sceneMain;
 	public Scene sceneRoom;
+	public Scene sceneCreate;
 	public Stage stage;
 	
 	public String inputMode = "standard";
 	
 	public HashMap<String, Scene> scenes = new HashMap<>();
+	
+	public HashMap<String, String> createSetting = new HashMap<>();
 	
 	public void startClient(String ip, int port) {
 		try {
@@ -119,6 +123,10 @@ public class Main extends Application {
 									inputMode = roomSetting.get(0).get("inputMode");
 									System.out.println("입력 모드 변경: " + inputMode);
 								} else {
+									HashMap<String, String> reloadMap = new HashMap<>();
+									reloadMap.put("act", "reload");
+									controllerMain.uiControl(reloadMap);
+									
 									for (int ind = 0; ind < roomSetting.size(); ind++) {
 										HashMap<String, String> roomMap = roomSetting.get(ind);
 										roomMap.put("act", "room");
@@ -158,12 +166,24 @@ public class Main extends Application {
 		return newLoader;
 	}
 	public void start(Stage primaryStage) {
+		createSetting.put("roomName", "");
+		createSetting.put("roomType", "justchat");
+		createSetting.put("anonymous", "off");
+		createSetting.put("slowmode", "0");
+		createSetting.put("fileSend", "off");
+		createSetting.put("neologism", "off");
+		createSetting.put("oneKillWord", "off");
+		createSetting.put("wordTimer", "60");
+		createSetting.put("citizenJob", "off");
+		createSetting.put("mafiaCount", "1");
+		
 		try {
 			// 메인 씬 로드와 동시에 컨트롤러 가져오기
 			FXMLLoader fxmlMain = new FXMLLoader(getClass().getResource("uiMain.fxml"));
 			Parent rootMain = fxmlMain.load();
 			//controllerMain = new ControllerMain();
 			controllerMain = (ControllerMain) fxmlMain.getController();
+			controllerMain.createButton();
 			controllerMain.setMain(Main.this);
 			//fxmlMain.setController(controllerMain);
 			sceneMain = new Scene(rootMain, 823, 534);
@@ -174,6 +194,15 @@ public class Main extends Application {
 			controllerRoom.setMain(Main.this);
 			controllerRoom.leaveButton();
 			sceneRoom = new Scene(rootRoom, 823, 534);
+			
+			FXMLLoader fxmlCreate = new FXMLLoader(getClass().getResource("uiCreate.fxml"));
+			Parent rootCreate = fxmlCreate.load();
+			controllerCreate = (ControllerCreate) fxmlCreate.getController();
+			controllerCreate.setMain(Main.this);
+			controllerCreate.createButton();
+			controllerCreate.cancelButton();
+			controllerCreate.settingButtons();
+			sceneCreate = new Scene(rootCreate, 823, 534);
 			
 			sceneRoom.setOnKeyPressed(event -> {
 				if (event.getCode() == KeyCode.ENTER) {
