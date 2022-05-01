@@ -72,7 +72,7 @@ public class Client {
 								} else {
 									// 서버에 클라이언트가 요청한 작업처리를 맏김
 									//System.out.println(freight.get("act") + "를 받음");
-									Server.clientProcess(Client.this, freight);									
+									Server.clientProcess(Client.this, freight);
 								}
 							} else if (inputMode.equals("rooms") == true) {
 								// roomSetting 객체를 받음

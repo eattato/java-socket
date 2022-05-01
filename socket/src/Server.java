@@ -233,7 +233,7 @@ public class Server {
 							// 만든 방에 클라이언트 참가시킴
 							HashMap<String, String> joinMap = new HashMap<>();
 							joinMap.put("act", "join");
-							joinMap.put("param", Integer.toString(rooms.indexOf(room)));
+							joinMap.put("param", Integer.toString(rooms.size() - 1));
 							clientProcess(client, joinMap);
 						} else {
 							System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 잘못된 방 타입");
@@ -260,17 +260,20 @@ public class Server {
 				
 				// 이미 참가되어있는지 확인
 				int joined = -1;
+				Loop1 :
 				for (int room = 0; room < rooms.size(); room++) {
 					for (int cl = 0; cl < rooms.get(room).size(); cl++) {
 						//System.out.println("room checking " + room + " - " + cl);
 						if (rooms.get(room).get(cl) == client) {
 							joined = room;
+							break Loop1;
 						}
 					}
 				}
 				
 				// 방에 참가가 안 되어있어야함
 				if (joined == -1 && joiningRoom != -1 && joiningRoom < rooms.size()) {
+					ArrayList<Client> room = rooms.get(joiningRoom);
 					boolean pwDone = false;
 					if (roomSetting.get(joiningRoom).get("roomPassword").equals("") == true) {
 						pwDone = true;
@@ -280,10 +283,10 @@ public class Server {
 					
 					if (pwDone == true) {
 						int capacity = Integer.parseInt(roomSetting.get(joiningRoom).get("roomCapacity"));
-						if (capacity > rooms.get(joiningRoom).size()) {
+						if (capacity > room.size()) {
 							// 클라이언트 소켓을 해당 방에 추가
 							rooms.get(joiningRoom).add(client);
-							roomSetting.get(joiningRoom).replace("roomCurrent", Integer.toString(rooms.get(joiningRoom).size()));
+							roomSetting.get(joiningRoom).replace("roomCurrent", Integer.toString(room.size()));
 							System.out.println("참가: " + clientInfo + " - " + joiningRoom + ": " + roomSetting.get(joiningRoom).get("roomName"));
 							HashMap<String, String> joinMap = new HashMap<>();
 							joinMap.put("act", "join");
@@ -297,6 +300,17 @@ public class Server {
 							joinMap.put("roomCapacity", roomSetting.get(joiningRoom).get("roomCapacity"));
 							client.send(joinMap);
 							sendRoomDatas();
+							
+							for (int cl = 0; cl < room.size(); cl++) {
+								HashMap<String, String> leaveMsg = new HashMap<>();
+								leaveMsg.put("act", "joinMessage");
+								leaveMsg.put("param", clientInfo.get("username"));
+								
+								if (room.get(cl) != client) {
+									// 보낸 본인이 아니라면
+									room.get(cl).send(leaveMsg);
+								}
+							}
 						} else {
 							System.out.println(clientInfo.get("identifier") + ": 방이 꽉 찼습니다");
 						}
@@ -312,11 +326,12 @@ public class Server {
 				
 				// 방에 참가되어 있는지 확인
 				int joined = -1;
+				Loop1 :
 				for (int room = 0; room < rooms.size(); room++) {
-					for (int cl = 0; room < rooms.get(room).size(); cl++) {
+					for (int cl = 0; cl < rooms.get(room).size(); cl++) {
 						if (rooms.get(room).get(cl) == client) {
 							joined = room;
-							break;
+							break Loop1;
 						}
 					}
 				}
@@ -327,6 +342,7 @@ public class Server {
 				} else {
 					var room = rooms.get(joined);
 					room.remove(room.indexOf(client));
+					System.out.println(clientInfo.get("identifier") + ": 퇴장 - " + roomSetting.get(joined).get("roomName"));
 					
 					// 인원 없는 방이면
 					if (room.size() <= 0) {
@@ -340,7 +356,6 @@ public class Server {
 						Client altClient = room.get(0); // 다음으로 들어온 사람으로 방장 넘김
 						roomSetting.get(joined).replace("roomOwner", clientData.get(clients.indexOf(altClient)).get("identifier"));
 					}
-					System.out.println(clientInfo.get("identifier") + ": 퇴장 - " + roomSetting.get(joined).get("roomName"));
 					HashMap<String, String> leaveMap = new HashMap<>();
 					leaveMap.put("act", "leave");
 					client.send(leaveMap);
@@ -348,7 +363,7 @@ public class Server {
 					
 					for (int cl = 0; cl < room.size(); cl++) {
 						HashMap<String, String> leaveMsg = new HashMap<>();
-						leaveMsg.put("act", "leave");
+						leaveMsg.put("act", "leaveMessage");
 						leaveMsg.put("param", clientInfo.get("username"));
 						
 						if (room.get(cl) != client) {
@@ -365,16 +380,18 @@ public class Server {
 				if (msg != null) {
 					// 방에 참가가 되어있는지 확인
 					int joined = -1;
+					Loop1 :
 					for (int room = 0; room < rooms.size(); room++) {
 						for (int cl = 0; cl < rooms.get(room).size(); cl++) {
 							if (rooms.get(room).get(cl) == client) {
 								joined = room;
+								break Loop1;
 							}
 						}
 					}
 					
 					// 참가가 되어있다면
-					if (joined != 1) {
+					if (joined != -1) {
 						ArrayList<Client> room = rooms.get(joined);
 						for (int cl = 0; cl < room.size(); cl++) {
 							HashMap<String, String> sendMsg = new HashMap<>();
