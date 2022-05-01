@@ -50,6 +50,7 @@ public class Server {
 			setting.put("roomInd", "0");
 			setting.put("roomOwner", "system");
 			setting.put("roomPassword", "");
+			setting.put("anonymous", "false");
 			roomSetting.add(setting);
 			
 			
@@ -227,6 +228,26 @@ public class Server {
 							setting.put("roomCapacity", roomCapacity);
 							setting.put("roomOwner", clientData.get(clientInd).get("identifier"));
 							setting.put("roomPassword", "");
+							
+							ArrayList<String> modeSettings = new ArrayList<>();
+							if (roomType.equals("justchat") == true) {
+								modeSettings.add("anonymous");
+								modeSettings.add("slowmode");
+								modeSettings.add("fileSend");
+							} else if (roomType.equals("wordbomb") == true) {
+								modeSettings.add("oneKillWord");
+								modeSettings.add("neologism");
+								modeSettings.add("wordTimer");
+							} else if (roomType.equals("mafia") == true) {
+								modeSettings.add("citizenJob");
+								modeSettings.add("mafiaCount");
+							}
+							for (int ind = 0; ind < modeSettings.size(); ind++) {
+								if (order.get(modeSettings.get(ind)) != null) {
+									setting.put(modeSettings.get(ind), order.get(modeSettings.get(ind)));									
+								}
+							}
+							
 							roomSetting.add(setting);
 							System.out.println("방 생성: " + clientInfo);
 							
@@ -234,6 +255,10 @@ public class Server {
 							HashMap<String, String> joinMap = new HashMap<>();
 							joinMap.put("act", "join");
 							joinMap.put("param", Integer.toString(rooms.size() - 1));
+							if (order.get("nickname") != null) {
+								joinMap.put("nickname", order.get("nickname"));								
+							}
+							
 							clientProcess(client, joinMap);
 						} else {
 							System.out.println(clientInfo.get("identifier") + ": 방 생성에 실패하였습니다 - 잘못된 방 타입");
@@ -298,18 +323,24 @@ public class Server {
 							}
 							joinMap.put("roomCurrent", roomSetting.get(joiningRoom).get("roomCurrent"));
 							joinMap.put("roomCapacity", roomSetting.get(joiningRoom).get("roomCapacity"));
+							if (clientInfo.get("identifier").equals(roomSetting.get(joiningRoom).get("roomOwner")) == true) {
+								joinMap.put("roomType", roomSetting.get(joiningRoom).get("roomType"));
+							} else {
+								joinMap.put("roomType", "justchat");
+							}
 							client.send(joinMap);
 							sendRoomDatas();
+							
+							// 입력한 닉네임 사용
+							if (order.get("nickname") != null) {
+								clientInfo.replace("username", order.get("nickname"));
+							}
 							
 							for (int cl = 0; cl < room.size(); cl++) {
 								HashMap<String, String> leaveMsg = new HashMap<>();
 								leaveMsg.put("act", "joinMessage");
 								leaveMsg.put("param", clientInfo.get("username"));
-								
-								if (room.get(cl) != client) {
-									// 보낸 본인이 아니라면
-									room.get(cl).send(leaveMsg);
-								}
+								room.get(cl).send(leaveMsg);
 							}
 						} else {
 							System.out.println(clientInfo.get("identifier") + ": 방이 꽉 찼습니다");
@@ -355,6 +386,9 @@ public class Server {
 						// 만약 방장으로 나간거라면
 						Client altClient = room.get(0); // 다음으로 들어온 사람으로 방장 넘김
 						roomSetting.get(joined).replace("roomOwner", clientData.get(clients.indexOf(altClient)).get("identifier"));
+						HashMap<String, String> ownerMsg = new HashMap<>();
+						ownerMsg.put("act", "notice");
+						ownerMsg.put("param", clientData.get(clients.indexOf(altClient)).get("username") + " 님이 방장이 되었습니다.");
 					}
 					HashMap<String, String> leaveMap = new HashMap<>();
 					leaveMap.put("act", "leave");
@@ -395,7 +429,11 @@ public class Server {
 						ArrayList<Client> room = rooms.get(joined);
 						for (int cl = 0; cl < room.size(); cl++) {
 							HashMap<String, String> sendMsg = new HashMap<>();
-							sendMsg.put("param", clientInfo.get("username"));
+							if (roomSetting.get(joined).get("anonymous").equals("true") == true) {
+								sendMsg.put("param", "익명");
+							} else {
+								sendMsg.put("param", clientInfo.get("username"));
+							}
 							sendMsg.put("author", clientInfo.get("identifier"));
 							sendMsg.put("msg", msg);
 							
@@ -448,6 +486,35 @@ public class Server {
 				client.send(inputModeRooms); // 클라이언트 인풋 모드 방 설정 전송 모드로 변경
 				client.sendRoom(roomsCopy); // 클라이언트로 방 설정들 보냄
 				client.sendRoom(inputModeStandard); // 클라이언트 인풋 모드 원상복구
+			} else if (order.get("act").equals("start") == true) {
+				// 방에 참가가 되어있는지 확인
+				int joined = -1;
+				Loop1 :
+				for (int room = 0; room < rooms.size(); room++) {
+					for (int cl = 0; cl < rooms.get(room).size(); cl++) {
+						if (rooms.get(room).get(cl) == client) {
+							joined = room;
+							break Loop1;
+						}
+					}
+				}
+				
+				// 참가가 되어있다면
+				if (joined != -1) {
+					if (roomSetting.get(joined).get("roomOwner").equals(clientInfo.get("identifier")) == true) {
+						ArrayList<Client> room = rooms.get(joined);
+						
+						HashMap<String, String> startMsg = new HashMap<>();
+						startMsg.put("act", "startMessage");
+						for (int cl = 0; cl < room.size(); cl++) {
+							room.get(cl).send(startMsg);
+						}
+					} else {
+						System.out.println(clientInfo.get("identifier") + ": 게임 시작에 실패하였습니다 - 방장이 아닙니다");
+					}
+				} else {
+					System.out.println(clientInfo.get("identifier") + ": 게임 시작에 실패하였습니다 - 참가되어 있지 않습니다");
+				}
 			}
 		} else {
 			System.out.println("요청 실패: " + clientInfo + " - 요청 목적이 없습니다");

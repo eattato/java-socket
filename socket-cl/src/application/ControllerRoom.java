@@ -47,6 +47,9 @@ public class ControllerRoom {
 	@FXML
 	private Text roomAdmits;
 	
+	@FXML
+	private Button start;
+	
 	private ArrayList<Pane> scrollObjects = new ArrayList<Pane>();
 	
 	private float currentScroll = 0;
@@ -65,6 +68,17 @@ public class ControllerRoom {
 				HashMap<String, String> leaveMap = new HashMap<>();
 				leaveMap.put("act", "leave");
 				main.send(leaveMap);
+			}
+		});
+	}
+	
+	public void startButton() {
+		start.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				HashMap<String, String> startMap = new HashMap<>();
+				startMap.put("act", "start");
+				main.send(startMap);
 			}
 		});
 	}
@@ -97,7 +111,7 @@ public class ControllerRoom {
 					String param = command.get("param");
 					String msg = command.get("msg");
 					String effect = command.get("effect");
-					if (act.equals("joinMessage") == true || act.equals("leaveMessage") == true) {
+					if (act.equals("joinMessage") == true || act.equals("leaveMessage") == true || act.equals("startMessage") == true || act.equals("notice") == true) {
 						latest = "System";
 						//scrollUp(60); // 전에 있던 UI 오브젝트들 모두 세로 사이즈만큼 위로
 						Pane joinPane = new Pane(); // 새 Pane 생성
@@ -109,8 +123,12 @@ public class ControllerRoom {
 						Label joinLabel = new Label();
 						if (act.equals("joinMessage") == true) {
 							joinLabel.setText(param + " 님이 입장하였습니다.");
-						} else {
+						} else if (act.equals("leaveMessage") == true) {
 							joinLabel.setText(param + " 님이 퇴장하였습니다.");
+						} else  if (act.equals("startMessage") == true) {
+							joinLabel.setText("게임이 시작되었습니다!");
+						} else  if (act.equals("notice") == true) {
+							joinLabel.setText(param);
 						}
 						joinLabel.setAlignment(Pos.CENTER); // 라벨 가운데 정렬
 						joinLabel.setLayoutX(144);
@@ -256,6 +274,24 @@ public class ControllerRoom {
 						roomName.setText(command.get("roomName"));
 						roomSetting.setText(command.get("roomSetting"));
 						roomAdmits.setText(command.get("roomCurrent") + " / " + command.get("roomCapacity"));
+						
+						if (command.get("roomType").equals("justchat") == true) {
+							roomAdmits.setLayoutX(651);
+							start.setVisible(true);
+						} else {
+							roomAdmits.setLayoutX(740);
+							start.setVisible(false);
+						}
+					}
+					
+					// 스크롤 늘리기
+					double scrollPos = scroll.getVvalue();
+					if (currentScroll > scrollFrame.getPrefHeight()) {
+						scrollFrame.setPrefHeight(currentScroll);
+						System.out.println(scrollPos);
+						if (scrollPos == 1.0) {
+							scroll.setVvalue(1);
+						}
 					}
 				} catch (Exception error) {
 					error.printStackTrace();

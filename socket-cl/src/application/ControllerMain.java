@@ -51,6 +51,9 @@ public class ControllerMain {
 	@FXML
 	private Text roomAdmits;
 	
+	@FXML
+	private TextField nickname;
+	
 	private ArrayList<Pane> scrollObjects = new ArrayList<Pane>();
 	
 	private float currentScroll = 77;
@@ -66,6 +69,7 @@ public class ControllerMain {
 			public void handle(ActionEvent event) {
 				main.stage.setScene(main.sceneCreate);
 				main.stage.show();
+				main.createSetting.replace("nickname", nickname.getText());
 			}
 		});
 	}
@@ -167,6 +171,7 @@ public class ControllerMain {
 								HashMap<String, String> joinMap = new HashMap<>();
 								joinMap.put("act", "join");
 								joinMap.put("param", command.get("roomInd"));
+								main.createSetting.replace("nickname", nickname.getText());
 								main.send(joinMap);
 							}
 						});

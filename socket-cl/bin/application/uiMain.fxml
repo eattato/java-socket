@@ -46,5 +46,10 @@
             <Font name="Hancom Gothic Regular" size="20.0" />
          </font>
       </Button>
+      <TextField fx:id="nickname" layoutX="515.0" layoutY="5.0" prefHeight="43.0" prefWidth="185.0" promptText="닉네임을 입력하세요" style="-fx-background-radius: 15; -fx-effect: null;">
+         <font>
+            <Font name="Hancom Gothic Regular" size="16.0" />
+         </font>
+      </TextField>
    </children>
 </AnchorPane>

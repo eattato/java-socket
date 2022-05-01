@@ -97,6 +97,7 @@ public class ControllerCreate {
 				createMap.put("roomType", main.createSetting.get("roomType"));
 				createMap.put("roomName", name.getText());
 				createMap.put("roomCapacity", capacity.getText());
+				createMap.put("nickname", main.createSetting.get("nickname"));
 				if (main.createSetting.get("roomType").equals("justchat") == true) {
 					createMap.put("anonymous", main.createSetting.get("anonymous"));
 					createMap.put("slowmode", main.createSetting.get("slowmode"));

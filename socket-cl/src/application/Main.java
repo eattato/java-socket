@@ -91,6 +91,7 @@ public class Main extends Application {
 										joinMap.put("roomSetting", freight.get("roomSetting"));
 										joinMap.put("roomCurrent", freight.get("roomCurrent"));
 										joinMap.put("roomCapacity", freight.get("roomCapacity"));
+										joinMap.put("roomType", freight.get("roomType"));
 										controllerRoom.uiControl(joinMap);
 										Platform.runLater(new Runnable() {
 											@Override
@@ -176,6 +177,7 @@ public class Main extends Application {
 		createSetting.put("wordTimer", "60");
 		createSetting.put("citizenJob", "off");
 		createSetting.put("mafiaCount", "1");
+		createSetting.put("nickname", "");
 		
 		try {
 			// 메인 씬 로드와 동시에 컨트롤러 가져오기

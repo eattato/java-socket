@@ -24,7 +24,7 @@
       </Button>
       <ScrollPane fx:id="scroll" layoutY="52.0" prefHeight="432.0" prefWidth="823.0" style="-fx-background: #88FA5A;" stylesheets="@ui.css" vbarPolicy="ALWAYS">
          <content>
-            <Pane fx:id="scrollFrame" prefHeight="438.0" prefWidth="816.0">
+            <Pane fx:id="scrollFrame" prefHeight="432.0" prefWidth="816.0">
             </Pane>
          </content>
       </ScrollPane>
@@ -48,5 +48,10 @@
             <Font name="Hancom Gothic Regular" size="20.0" />
          </font>
       </TextField>
+      <Button fx:id="start" layoutX="723.0" layoutY="6.0" mnemonicParsing="false" prefHeight="41.0" prefWidth="94.0" style="-fx-background-color: gold; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: #FAF223; -fx-border-width: 2;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="게임 시작" visible="false">
+         <font>
+            <Font name="Hancom Gothic Regular" size="16.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>
