@@ -1,7 +1,13 @@
 package application;
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.IntBuffer;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javafx.application.Platform;
@@ -13,6 +19,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritablePixelFormat;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
@@ -61,7 +73,9 @@ public class ControllerRoom {
 		main = mainset;
 	}
 	
-	public void leaveButton() {
+	public double scrollPos = 1.0;
+	
+	public void control() {
 		leave.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -70,9 +84,7 @@ public class ControllerRoom {
 				main.send(leaveMap);
 			}
 		});
-	}
-	
-	public void startButton() {
+		
 		start.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -81,7 +93,77 @@ public class ControllerRoom {
 				main.send(startMap);
 			}
 		});
+		
+		scrollFrame.heightProperty().addListener(observable -> {
+			if (scrollPos == 1.0) {
+				scroll.setVvalue(1.0);
+			}
+		});
+		
+		scrollFrame.setOnDragOver(new EventHandler<DragEvent>() {
+			public void handle(DragEvent event) {
+				if (event.getGestureSource() != scrollFrame) {
+                    event.acceptTransferModes(TransferMode.ANY);
+                }
+            	event.consume();
+			}
+		});
+		
+		scrollFrame.setOnDragDropped(new EventHandler<DragEvent>() {
+			public void handle(DragEvent event) {
+				System.out.println("파일 드롭됨");
+				//boolean dropSuccess = false;
+				Dragboard drag = event.getDragboard();
+				List<File> files = drag.getFiles();
+				for (int file = 0; file < files.size(); file++) {
+					Image img = new Image(files.get(file).getAbsolutePath());
+					if (img.isError() == false) {
+//						FileInputStream fileInputStreamReader = new FileInputStream(files.get(file));
+//			            byte[] bytes = new byte[(int) files.get(file).length()];
+//			            fileInputStreamReader.read(bytes);
+//			            
+//			            String imgStr = new String(Base64.getEncoder().encode(bytes));
+//			            
+//			            HashMap<String, String> imageMap = new HashMap<>();
+//			            imageMap.put("act", "image");
+//			            imageMap.put("param", new String(Base64.encodeBase64(bytes), "UTF-8"));
+//			            
+//			            main.send(imageMap);
+			            
+//						PixelReader imgReader = img.getPixelReader();
+//						WritablePixelFormat<IntBuffer> format = WritablePixelFormat.getIntArgbInstance();
+//						
+//						int width = (int) img.getWidth();
+//						int height = (int) img.getHeight();
+//						int pixels[] = new int[width * height];
+//						
+//						// 왼쪽 위부터 오른쪽 아래까지 픽셀을 읽음
+//						imgReader.getPixels(0, 0, width, height, format, pixels, 0, width);
+//						String imgStr = "";
+//						for (int ind = 0; ind < pixels.length; ind++) {
+//							imgStr += Integer.toString(pixels[ind]);
+//							if (ind != pixels.length - 1) {
+//								imgStr += " ";
+//							}
+//						}
+//						
+//						HashMap<String, String> imageMap = new HashMap<>();
+//						imageMap.put("act", "image");
+//						imageMap.put("param", imgStr);
+//						main.send(imageMap);
+//						System.out.println(imgStr);
+					}
+				}
+				
+				//event.setDropCompleted(dropSuccess);
+				event.consume();
+			}
+		});
 	}
+	
+	//public void dragDropFrame() {
+		//scrollFrame.
+	//}
 	
 	// UI 제어
 	public void scrollUp(int move) {
@@ -153,6 +235,11 @@ public class ControllerRoom {
 						chatLabel.setFont(new Font("Hancom Gothic Regular", 20.0));
 						chatLabel.setPrefWidth(50);
 						chatLabel.setPrefHeight(42);
+						
+						// 이미지 있을 때
+						if (command.get("image") != null) {
+							System.out.println(command.get("image"));
+						}
 						
 						// 본인
 						if (act.equals("selfmsg") == true) {
@@ -276,22 +363,18 @@ public class ControllerRoom {
 						roomAdmits.setText(command.get("roomCurrent") + " / " + command.get("roomCapacity"));
 						
 						if (command.get("roomType").equals("justchat") == true) {
+							roomAdmits.setLayoutX(740);
+							start.setVisible(false);                                                                                                                                                                               
+						} else {
 							roomAdmits.setLayoutX(651);
 							start.setVisible(true);
-						} else {
-							roomAdmits.setLayoutX(740);
-							start.setVisible(false);
 						}
 					}
 					
 					// 스크롤 늘리기
-					double scrollPos = scroll.getVvalue();
+					scrollPos = scroll.getVvalue();
 					if (currentScroll > scrollFrame.getPrefHeight()) {
 						scrollFrame.setPrefHeight(currentScroll);
-						System.out.println(scrollPos);
-						if (scrollPos == 1.0) {
-							scroll.setVvalue(1);
-						}
 					}
 				} catch (Exception error) {
 					error.printStackTrace();

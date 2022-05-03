@@ -82,6 +82,8 @@ public class Client {
 								if (roomSetting.get(0).containsKey("inputMode") && roomSetting.size() == 0 ) {
 									inputMode = roomSetting.get(0).get("inputMode");
 								}
+							} else if (inputMode.equals("image") == true) {
+								//var img = (Image) input.readObject();
 							}
 						} else {
 							System.out.println("통신을 종료합니다");

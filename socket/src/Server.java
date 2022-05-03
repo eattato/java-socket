@@ -68,7 +68,7 @@ public class Server {
 						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						//e.printStackTrace();
 					}
 				}
 			};
@@ -429,13 +429,18 @@ public class Server {
 						ArrayList<Client> room = rooms.get(joined);
 						for (int cl = 0; cl < room.size(); cl++) {
 							HashMap<String, String> sendMsg = new HashMap<>();
-							if (roomSetting.get(joined).get("anonymous").equals("true") == true) {
+							if (roomSetting.get(joined).get("anonymous").equals("on") == true) {
 								sendMsg.put("param", "익명");
 							} else {
 								sendMsg.put("param", clientInfo.get("username"));
 							}
 							sendMsg.put("author", clientInfo.get("identifier"));
 							sendMsg.put("msg", msg);
+							
+							// 이미지 포함이면 이미지 받은 거 그대로 다른 클라이언트에 줌
+							if (order.get("image") != null) {
+								sendMsg.put("image", order.get("image"));
+							}
 							
 							if (room.get(cl) != client) {
 								// 보낸 본인이 아니라면

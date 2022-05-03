@@ -172,6 +172,7 @@ public class ControllerMain {
 								joinMap.put("act", "join");
 								joinMap.put("param", command.get("roomInd"));
 								main.createSetting.replace("nickname", nickname.getText());
+								joinMap.put("nickname", main.createSetting.get("nickname"));
 								main.send(joinMap);
 							}
 						});
