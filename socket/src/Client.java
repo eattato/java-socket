@@ -19,6 +19,7 @@ public class Client {
 		HashMap<String, String> clData = new HashMap<String, String>();
 		clData.put("identifier", clientInfo);
 		clData.put("username", "익명");
+		clData.put("profile", "");
 		Server.clientData.add(clData);
 		System.out.println("접속: " + clientInfo);
 		

@@ -53,5 +53,8 @@
             <Font name="Hancom Gothic Regular" size="16.0" />
          </font>
       </Button>
+      <Pane fx:id="fileFrame" layoutX="105.0" layoutY="424.0" prefHeight="50.0" prefWidth="718.0">
+         
+      </Pane>
    </children>
 </AnchorPane>

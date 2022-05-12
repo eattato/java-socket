@@ -23,7 +23,7 @@ public class Main extends Application {
 	static Socket connection;
 	
 	String ip = "127.0.0.1";
-	int port = 8888;
+	int port = 80;
 	
 	public ObjectInputStream input;
 	public ObjectOutputStream output;
@@ -40,11 +40,23 @@ public class Main extends Application {
 	public HashMap<String, Scene> scenes = new HashMap<>();
 	
 	public HashMap<String, String> createSetting = new HashMap<>();
+	public ArrayList<String> sendingImages = new ArrayList<>();
 	
 	public void startClient(String ip, int port) {
 		try {
+			InetAddress[] dns = null;
+			try {
+				dns = InetAddress.getAllByName("jjabtu.herokuapp.com");
+			} catch (UnknownHostException error) {
+				System.out.println("도메인을 찾지 못 했습니다");
+			}
+			
 			System.out.println("서버 소켓 연결 중");
-			connection = new Socket(ip, port);
+			//if (dns == null || dns.length == 0) {
+				connection = new Socket(ip, port);
+			//} else {
+				//connection = new Socket(dns[0].getHostAddress(), 80);
+			//}
 			System.out.println("서버 입출력 스트림 로딩 중");
 			// 중요! inputStream은 연결된 outputStream이 나올 때까지 대기타다가 생성되기 때문에 input을 뒤에 두기
 			output = new ObjectOutputStream(connection.getOutputStream());
@@ -198,6 +210,8 @@ public class Main extends Application {
 			//controllerMain = new ControllerMain();
 			controllerMain = (ControllerMain) fxmlMain.getController();
 			controllerMain.createButton();
+			controllerMain.pwJoinButton();
+			controllerMain.profileDrag();
 			controllerMain.setMain(Main.this);
 			//fxmlMain.setController(controllerMain);
 			sceneMain = new Scene(rootMain, 823, 534);
@@ -223,8 +237,14 @@ public class Main extends Application {
 					var msgSend = new HashMap<String, String>();
 					msgSend.put("act", "msg");
 					msgSend.put("param", controllerRoom.getTextInput());
+					
+					String images = String.join(" ", sendingImages);
+					msgSend.put("image", images);
 					send(msgSend);
 					controllerRoom.resetTextInput();
+					sendingImages.clear();
+					controllerRoom.clearFileButtons();
+					//System.out.println("이미지 전송: " + images);
 				}
 			});
 			

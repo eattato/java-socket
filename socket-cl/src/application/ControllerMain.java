@@ -1,8 +1,13 @@
 package application;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
+import java.util.Base64.Encoder;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -13,7 +18,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -54,6 +65,26 @@ public class ControllerMain {
 	@FXML
 	private TextField nickname;
 	
+	@FXML
+	private Pane pwCover;
+	
+	@FXML
+	private Button pwJoin;
+	
+	@FXML
+	private TextField password;
+	
+	@FXML
+	private ImageView profile;
+	
+	@FXML
+	private Pane profileFrame;
+	
+	@FXML
+	private Rectangle profileClip;
+	
+	private String currentRoomInd = "";
+	
 	private ArrayList<Pane> scrollObjects = new ArrayList<Pane>();
 	
 	private float currentScroll = 77;
@@ -70,6 +101,80 @@ public class ControllerMain {
 				main.stage.setScene(main.sceneCreate);
 				main.stage.show();
 				main.createSetting.replace("nickname", nickname.getText());
+			}
+		});
+	}
+	
+	public void pwJoinButton() {
+		pwJoin.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				HashMap<String, String> joinMap = new HashMap<>();
+				joinMap.put("act", "join");
+				joinMap.put("param", currentRoomInd);
+				joinMap.put("roomPassword", password.getText());
+				main.createSetting.replace("nickname", nickname.getText());
+				joinMap.put("nickname", main.createSetting.get("nickname"));
+				main.send(joinMap);
+				
+				pwCover.setVisible(false);
+				password.setText("");
+			}
+		});
+	}
+	
+	public void profileDrag() {
+		//profile.setClip(profileClip);
+		
+		profile.setOnDragOver(new EventHandler<DragEvent>() {
+			public void handle(DragEvent event) {
+				if (event.getGestureSource() != profile) {
+                    event.acceptTransferModes(TransferMode.ANY);
+                }
+            	event.consume();
+			}
+		});
+		
+		profile.setOnDragDropped(new EventHandler<DragEvent>() {
+			public void handle(DragEvent event) {
+				System.out.println("파일 드롭됨");
+				//boolean dropSuccess = false;
+				Dragboard drag = event.getDragboard();
+				List<File> files = drag.getFiles();
+				if (files.size() >= 1) {
+					File file = files.get(0);
+					System.out.println("드롭됨: " + file.getPath());
+					Image img = new Image(file.getAbsolutePath());
+					
+					// 이미지인지 확인
+					if (img.isError() == false) {
+						try {
+							// 파일 사이즈에 맞춰 버퍼 준비
+							byte[] buff = new byte[(int) file.length()];
+							try (FileInputStream fileis = new FileInputStream(file)) {
+								fileis.read(buff);
+							}
+							
+							// base64 인코더로 이미지를 스트링으로 인코딩해서 전송할 이미지 목록에 올림
+							Encoder encoder = Base64.getEncoder();
+							String encodedImage = new String(encoder.encode(buff));
+							
+							HashMap<String, String> profileMap = new HashMap<>();
+							profileMap.put("act", "profile");
+							profileMap.put("param", encodedImage);
+							main.send(profileMap);
+							
+							profile.setImage(img);
+							//System.out.println("이미지 추가: " + encodedImage);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				//event.setDropCompleted(dropSuccess);
+				event.consume();
 			}
 		});
 	}
@@ -168,12 +273,19 @@ public class ControllerMain {
 						roomJoin.setOnAction(new EventHandler<ActionEvent>() {
 							@Override
 							public void handle(ActionEvent event) {
-								HashMap<String, String> joinMap = new HashMap<>();
-								joinMap.put("act", "join");
-								joinMap.put("param", command.get("roomInd"));
-								main.createSetting.replace("nickname", nickname.getText());
-								joinMap.put("nickname", main.createSetting.get("nickname"));
-								main.send(joinMap);
+								// 비번 없는 방일때 
+								if (command.get("roomPassword").equals("false") == true) {
+									HashMap<String, String> joinMap = new HashMap<>();
+									joinMap.put("act", "join");
+									joinMap.put("param", command.get("roomInd"));
+									joinMap.put("roomPassword", "");
+									main.createSetting.replace("nickname", nickname.getText());
+									joinMap.put("nickname", main.createSetting.get("nickname"));
+									main.send(joinMap);
+								} else {
+									currentRoomInd = command.get("roomInd");
+									pwCover.setVisible(true);
+								}
 							}
 						});
 						roomPane.getChildren().add(roomJoin);

@@ -4,6 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
 
 <AnchorPane fx:controller="application.ControllerMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="823.0" style="-fx-background-color: #FFFB7C;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -51,5 +53,34 @@
             <Font name="Hancom Gothic Regular" size="16.0" />
          </font>
       </TextField>
+      <Pane fx:id="pwCover" visible="false" prefHeight="534.0" prefWidth="823.0" style="-fx-background-color: #00000055;">
+         <children>
+            <Pane layoutX="301.0" layoutY="197.0" prefHeight="140.0" prefWidth="220.0" style="-fx-background-color: white; -fx-background-radius: 15px;">
+               <children>
+                  <Text layoutX="51.0" layoutY="25.0" strokeType="OUTSIDE" strokeWidth="0.0" text="비밀번호 입력">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Text>
+                  <TextField fx:id="password" alignment="CENTER" layoutX="25.0" layoutY="39.0" prefHeight="43.0" prefWidth="170.0" style="-fx-background-color: ghostwhite; -fx-border-color: lightgray;">
+                     <font>
+                        <Font size="20.0" />
+                     </font>
+                  </TextField>
+                  <Button fx:id="pwJoin" layoutX="66.0" layoutY="90.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="87.0" style="-fx-background-color: ghostwhite; -fx-background-radius: 15; -fx-border-color: lightgray; -fx-border-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="참가">
+                     <font>
+                        <Font name="Hancom Gothic Regular" size="20.0" />
+                     </font>
+                  </Button>
+               </children>
+            </Pane>
+         </children>
+      </Pane>
+      <Pane fx:id="profileFrame" layoutX="466.0" layoutY="6.0" prefHeight="45.0" prefWidth="45.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: lightgray; -fx-border-radius: 15;">
+         <children>
+	         <Rectangle fx:id="profileClip" arcHeight="25.0" arcWidth="25.0" fill="#ffffff00" height="45.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" visible="false" width="45.0" />
+            <ImageView fx:id="profile" fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true" style="-fx-background-radius: 15; -fx-border-radius: 15;"/>
+         </children>
+      </Pane>
    </children>
 </AnchorPane>

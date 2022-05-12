@@ -21,7 +21,18 @@ public class Server {
 	static ServerSocket server;
 	
 	public static void main(String[] args) throws IOException {
-		serverStart("", 8888);
+		InetAddress[] dns = null;
+		try {
+			dns = InetAddress.getAllByName("jjabtu.herokuapp.com");
+		} catch (UnknownHostException error) {
+			System.out.println("도메인을 찾을 수 없습니다");
+		}
+		
+		//if (dns == null || dns.length == 0) {
+			serverStart("", 8888);
+		//} else {
+			//serverStart(dns[0].getHostAddress(), Integer.parseInt(System.getenv("PORT")));
+		//}
 	}
 	
 	public static void serverStart(String ip, int port) throws SocketException {
@@ -50,7 +61,8 @@ public class Server {
 			setting.put("roomInd", "0");
 			setting.put("roomOwner", "system");
 			setting.put("roomPassword", "");
-			setting.put("anonymous", "false");
+			setting.put("anonymous", "off");
+			setting.put("fileSend", "on");
 			roomSetting.add(setting);
 			
 			
@@ -145,19 +157,20 @@ public class Server {
 			HashMap<String, String> settingCopy = new HashMap<>();
 			settingCopy.put("current", Integer.toString(rooms.get(ind).size()));
 			settingCopy.put("roomInd", Integer.toString(ind));
+			
+			settingCopy.put("roomInd", Integer.toString(ind));
 			originalSetting.forEach((key, val) -> {
-				if (key.equals("password") == false) {
-					settingCopy.put(key, val);
-				} else {
-					// 비번 안 걸린 방이면 비번 false로 바꿔서 클라이언트 줌
-					if (originalSetting.get("password").equals("") == true) {
-						settingCopy.put(key, "false");
-					} else {
-						// 비번 걸려 있는 방이면 비번 true로 바꿔서 클라이언트 줌
-						settingCopy.put(key, "true");
-					}
-				}
+				settingCopy.put(key, val);
 			});
+			
+			// 비번 안 걸린 방이면 비번 false로 바꿔서 클라이언트 줌
+			if (originalSetting.get("roomPassword").equals("") == true) {
+				settingCopy.replace("roomPassword", "false");
+			} else {
+				// 비번 걸려 있는 방이면 비번 true로 바꿔서 클라이언트 줌
+				settingCopy.replace("roomPassword", "true");
+			}
+			
 			roomsCopy.add(settingCopy);
 		}
 		
@@ -187,6 +200,7 @@ public class Server {
 				String roomType = order.get("roomType");
 				String roomName = order.get("roomName");
 				String roomCapacity = order.get("roomCapacity");
+				String roomPassword = order.get("roomPassword");
 				int capacity = 0;
 				try {
 					capacity = Integer.parseInt(roomCapacity);					
@@ -207,7 +221,7 @@ public class Server {
 				}
 				
 				if (joined == -1) {
-					if (roomType != null && roomName != null && capacity >= 1) {
+					if (roomType != null && roomName != null && capacity >= 1 && roomPassword != null) {
 						boolean roomTypeFound = false;
 						for (int ind = 0; ind < availableRoomType.length; ind++) {
 							if (availableRoomType[ind].equals(roomType) == true) {
@@ -216,9 +230,9 @@ public class Server {
 							}
 						}
 						
+						// 방 타입이 사용가능하면
 						if (roomTypeFound == true) {
 							ArrayList<Client> room = new ArrayList<>();
-							//room.add(client);
 							rooms.add(room);
 							
 							HashMap<String, String> setting = new HashMap<>();
@@ -227,7 +241,7 @@ public class Server {
 							setting.put("roomCurrent", "0");
 							setting.put("roomCapacity", roomCapacity);
 							setting.put("roomOwner", clientData.get(clientInd).get("identifier"));
-							setting.put("roomPassword", "");
+							setting.put("roomPassword", roomPassword);
 							
 							ArrayList<String> modeSettings = new ArrayList<>();
 							if (roomType.equals("justchat") == true) {
@@ -255,6 +269,7 @@ public class Server {
 							HashMap<String, String> joinMap = new HashMap<>();
 							joinMap.put("act", "join");
 							joinMap.put("param", Integer.toString(rooms.size() - 1));
+							joinMap.put("roomPassword", roomPassword);
 							if (order.get("nickname") != null) {
 								joinMap.put("nickname", order.get("nickname"));								
 							}
@@ -302,7 +317,7 @@ public class Server {
 					boolean pwDone = false;
 					if (roomSetting.get(joiningRoom).get("roomPassword").equals("") == true) {
 						pwDone = true;
-					} else if (roomSetting.get(joiningRoom).get("roomPassword").equals(order.get("password")) == true) {
+					} else if (roomSetting.get(joiningRoom).get("roomPassword").equals(order.get("roomPassword")) == true) {
 						pwDone = true;
 					}
 					
@@ -336,11 +351,13 @@ public class Server {
 								clientInfo.replace("username", order.get("nickname"));
 							}
 							
+							HashMap<String, String> joinMsg = new HashMap<>();
+							joinMsg.put("act", "joinMessage");
+							joinMsg.put("param", clientInfo.get("username"));
+							joinMsg.put("roomCurrent", roomSetting.get(joiningRoom).get("roomCurrent"));
+							joinMsg.put("roomCapacity", roomSetting.get(joiningRoom).get("roomCapacity"));
 							for (int cl = 0; cl < room.size(); cl++) {
-								HashMap<String, String> leaveMsg = new HashMap<>();
-								leaveMsg.put("act", "joinMessage");
-								leaveMsg.put("param", clientInfo.get("username"));
-								room.get(cl).send(leaveMsg);
+								room.get(cl).send(joinMsg);
 							}
 						} else {
 							System.out.println(clientInfo.get("identifier") + ": 방이 꽉 찼습니다");
@@ -431,14 +448,17 @@ public class Server {
 							HashMap<String, String> sendMsg = new HashMap<>();
 							if (roomSetting.get(joined).get("anonymous").equals("on") == true) {
 								sendMsg.put("param", "익명");
+								sendMsg.put("profile", clientInfo.get("profile"));
 							} else {
 								sendMsg.put("param", clientInfo.get("username"));
+								sendMsg.put("profile", clientInfo.get("profile"));
 							}
 							sendMsg.put("author", clientInfo.get("identifier"));
 							sendMsg.put("msg", msg);
 							
 							// 이미지 포함이면 이미지 받은 거 그대로 다른 클라이언트에 줌
-							if (order.get("image") != null) {
+							if (roomSetting.get(joined).get("fileSend").equals("on") == true && order.get("image") != null) {
+								System.out.println("이미지를 전송합니다");
 								sendMsg.put("image", order.get("image"));
 							}
 							
@@ -464,19 +484,20 @@ public class Server {
 					HashMap<String, String> originalSetting = roomSetting.get(ind);
 					HashMap<String, String> settingCopy = new HashMap<>();
 					settingCopy.put("current", Integer.toString(rooms.get(ind).size()));
+					
+					settingCopy.put("roomInd", Integer.toString(ind));
 					originalSetting.forEach((key, val) -> {
-						if (key.equals("password") == false) {
-							settingCopy.put(key, val);
-						} else {
-							// 비번 안 걸린 방이면 비번 false로 바꿔서 클라이언트 줌
-							if (originalSetting.get("password").equals("") == true) {
-								settingCopy.put(key, "false");
-							} else {
-								// 비번 걸려 있는 방이면 비번 true로 바꿔서 클라이언트 줌
-								settingCopy.put(key, "true");
-							}
-						}
+						settingCopy.put(key, val);
 					});
+					
+					// 비번 안 걸린 방이면 비번 false로 바꿔서 클라이언트 줌
+					if (originalSetting.get("roomPassword").equals("") == true) {
+						settingCopy.replace("roomPassword", "false");
+					} else {
+						// 비번 걸려 있는 방이면 비번 true로 바꿔서 클라이언트 줌
+						settingCopy.replace("roomPassword", "true");
+					}
+					
 					roomsCopy.add(settingCopy);
 				}
 				
@@ -519,6 +540,10 @@ public class Server {
 					}
 				} else {
 					System.out.println(clientInfo.get("identifier") + ": 게임 시작에 실패하였습니다 - 참가되어 있지 않습니다");
+				}
+			} else if (order.get("act").equals("profile") == true) {
+				if (order.get("param") != null) {
+					clientInfo.replace("profile", order.get("param"));
 				}
 			}
 		} else {

@@ -1,10 +1,16 @@
 package application;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Base64.Encoder;
+import java.util.Base64.Decoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,12 +26,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -62,7 +70,11 @@ public class ControllerRoom {
 	@FXML
 	private Button start;
 	
+	@FXML
+	private Pane fileFrame;
+	
 	private ArrayList<Pane> scrollObjects = new ArrayList<Pane>();
+	private ArrayList<Button> fileButtons = new ArrayList<Button>();
 	
 	private float currentScroll = 0;
 	
@@ -115,43 +127,54 @@ public class ControllerRoom {
 				//boolean dropSuccess = false;
 				Dragboard drag = event.getDragboard();
 				List<File> files = drag.getFiles();
-				for (int file = 0; file < files.size(); file++) {
-					Image img = new Image(files.get(file).getAbsolutePath());
+				for (int ind = 0; ind < files.size(); ind++) {
+					File file = files.get(ind);
+					System.out.println("드롭됨: " + file.getPath());
+					Image img = new Image(file.getAbsolutePath());
+					
+					// 이미지인지 확인
 					if (img.isError() == false) {
-//						FileInputStream fileInputStreamReader = new FileInputStream(files.get(file));
-//			            byte[] bytes = new byte[(int) files.get(file).length()];
-//			            fileInputStreamReader.read(bytes);
-//			            
-//			            String imgStr = new String(Base64.getEncoder().encode(bytes));
-//			            
-//			            HashMap<String, String> imageMap = new HashMap<>();
-//			            imageMap.put("act", "image");
-//			            imageMap.put("param", new String(Base64.encodeBase64(bytes), "UTF-8"));
-//			            
-//			            main.send(imageMap);
-			            
-//						PixelReader imgReader = img.getPixelReader();
-//						WritablePixelFormat<IntBuffer> format = WritablePixelFormat.getIntArgbInstance();
-//						
-//						int width = (int) img.getWidth();
-//						int height = (int) img.getHeight();
-//						int pixels[] = new int[width * height];
-//						
-//						// 왼쪽 위부터 오른쪽 아래까지 픽셀을 읽음
-//						imgReader.getPixels(0, 0, width, height, format, pixels, 0, width);
-//						String imgStr = "";
-//						for (int ind = 0; ind < pixels.length; ind++) {
-//							imgStr += Integer.toString(pixels[ind]);
-//							if (ind != pixels.length - 1) {
-//								imgStr += " ";
-//							}
-//						}
-//						
-//						HashMap<String, String> imageMap = new HashMap<>();
-//						imageMap.put("act", "image");
-//						imageMap.put("param", imgStr);
-//						main.send(imageMap);
-//						System.out.println(imgStr);
+						try {
+							// 파일 사이즈에 맞춰 버퍼 준비
+							byte[] buff = new byte[(int) file.length()];
+							try (FileInputStream fileis = new FileInputStream(file)) {
+								fileis.read(buff);
+							}
+							
+							// base64 인코더로 이미지를 스트링으로 인코딩해서 전송할 이미지 목록에 올림
+							Encoder encoder = Base64.getEncoder();
+							String encodedImage = new String(encoder.encode(buff));
+							main.sendingImages.add(encodedImage);
+							//System.out.println("이미지 추가: " + encodedImage);
+							
+							Button fileButton = new Button();
+							fileButton.setText(file.getName());
+							fileButton.setLayoutX(fileButtons.size() * 105);
+							fileButton.setLayoutY(10);
+							fileButton.setPrefWidth(100);
+							fileButton.setPrefHeight(30);
+							fileButton.setStyle("-fx-background-color: ghostwhite; -fx-background-radius: 10;");
+							fileButton.setFont(new Font("Hancom Gothic Regular", 12.0));
+							fileFrame.getChildren().add(fileButton);
+							fileButtons.add(fileButton);
+							
+							fileButton.setOnAction(new EventHandler<ActionEvent>() {
+								@Override
+								public void handle(ActionEvent event) {
+									int imageIndex = main.sendingImages.indexOf(encodedImage);
+									if (imageIndex != -1) {
+										main.sendingImages.remove(imageIndex);
+										for (int ind = imageIndex; ind < fileButtons.size(); ind++) {
+											fileButtons.get(ind).setLayoutX((ind - 1) * 105);
+										}
+									}
+									fileFrame.getChildren().remove(fileButton);
+								}
+							});
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}
 				
@@ -159,6 +182,13 @@ public class ControllerRoom {
 				event.consume();
 			}
 		});
+	}
+	
+	public void clearFileButtons() {
+		for (int ind = 0; ind < fileButtons.size(); ind++) {
+			fileFrame.getChildren().remove(fileButtons.get(ind));
+		}
+		fileButtons.clear();
 	}
 	
 	//public void dragDropFrame() {
@@ -222,8 +252,12 @@ public class ControllerRoom {
 						joinPane.getChildren().add(joinLabel);
 						scrollObjects.add(joinPane);
 						
+						roomAdmits.setText(command.get("roomCurrent") + " / " + command.get("roomCapacity"));
+						
 						currentScroll += 62;
 					} else if (act.equals("msg") == true || act.equals("selfmsg") == true) {
+						double scrollHeight = 50;
+						
 						// 보낸 이 identifier
 						String identifier = command.get("author");
 						
@@ -237,31 +271,91 @@ public class ControllerRoom {
 						chatLabel.setPrefHeight(42);
 						
 						// 이미지 있을 때
-						if (command.get("image") != null) {
-							System.out.println(command.get("image"));
+						boolean hasImage = false;
+						double imagePadding = 10;
+						double imgScale = 1;
+						double imgWidth = 0;
+						double imgHeight = 0;
+						ImageView imageView = null;
+						String encoded = command.get("image");
+						if (encoded != null && encoded.equals("") == false) {
+							hasImage = true;
+							System.out.println("이미지를 받았습니다.");
+							try {
+								Decoder decoder = Base64.getDecoder();
+								String[] encodedImages = encoded.split(" ");
+								for (int ind = 0; ind < encodedImages.length; ind++) {
+									byte[] decodedImage = decoder.decode(encodedImages[ind]);
+									Image image = new Image(new ByteArrayInputStream(decodedImage));
+									imageView = new ImageView();
+									imageView.setImage(image);
+									
+									imgWidth = image.getWidth();
+									imgHeight = image.getHeight();
+									// 가로 최대 300, 세로 최대 100 픽셀
+									if (imgWidth > 300 || imgHeight > 100) {
+										// 가로가 세로보다 크면 가로 기준으로 비율 조정
+										if (imgWidth > imgHeight) {
+											imgScale = 300 / imgWidth;
+										} else { // 세로가 더 크거나 같으면 세로 기준으로 비율 조정
+											imgScale = 100 / imgHeight;
+										}
+									}
+									
+									imageView.setFitWidth(imgWidth * imgScale);
+									imageView.setFitHeight(imgHeight * imgScale);
+								}
+							} catch (Exception error) {
+								error.printStackTrace();
+							}
 						}
 						
 						// 본인
 						if (act.equals("selfmsg") == true) {
-							chatLabel.setLayoutX(684);
+							chatLabel.setLayoutX(683);
 							chatLabel.setStyle("-fx-background-color: yellow; -fx-background-radius: 15;");
-							
+							if (hasImage == true) {
+								chatLabel.setLayoutX(723 - (imgWidth * imgScale + imagePadding));
+								chatLabel.setStyle("-fx-background-color: yellow; -fx-background-radius: 15; -fx-label-padding: " + (imgHeight * imgScale + 10) + " 0 0 0;");
+							}
 						} else {
 							chatLabel.setLayoutX(70);
 							chatLabel.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
+							if (hasImage == true) {
+								chatLabel.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-label-padding: " + (imgHeight * imgScale + 10) + " 0 0 0;");
+							}
+						}
+						
+						// 이미지 있을 때 사이즈 조정
+						if (hasImage == true) {
+							chatLabel.setPrefWidth(imgWidth * imgScale + imagePadding * 2);
+							
+							// 세로는 위에만 패딩 있으면 되서 *2 안 넣음
+							chatLabel.setPrefHeight(imgHeight * imgScale + imagePadding + 42);
 						}
 						
 						// 평범한 말풍선
 						if (identifier.equals(latest) == true) {
-							currentScroll += 50;
 							chatLabel.setLayoutY(4);
-							chatPane.setPrefHeight(50);
+							if (hasImage == false) {
+								scrollHeight = 50;
+								chatPane.setPrefHeight(50);
+							} else {
+								// 챗용 공간 42 + 챗 패인 패딩 8 + 이미지 패딩 윗면
+								scrollHeight = imgHeight * imgScale + 42 + 8 + imagePadding;
+								chatPane.setPrefHeight(scrollHeight);
+							}
 						} else {
 							// 프로필 포함 말풍선
 							latest = identifier;
-							currentScroll += 77;
+							if (hasImage == false) {
+								scrollHeight = 77;
+								chatPane.setPrefHeight(77);
+							} else {
+								scrollHeight = imgHeight * imgScale + 42 + 8 + 27 + imagePadding;
+								chatPane.setPrefHeight(scrollHeight);
+							}
 							chatLabel.setLayoutY(33);
-							chatPane.setPrefHeight(77);
 							
 							Text author = new Text();
 							Pane profileFrame = new Pane();
@@ -285,7 +379,36 @@ public class ControllerRoom {
 							profileFrame.setPrefHeight(50);
 							profileFrame.setStyle("-fx-background-color: white; -fx-background-radius: 15;");
 							chatPane.getChildren().add(profileFrame);
+							
+							if (command.get("profile").equals("") == false) {
+								try {
+									Decoder decoder = Base64.getDecoder();
+									byte[] decodedImage = decoder.decode(command.get("profile"));
+									Image image = new Image(new ByteArrayInputStream(decodedImage));
+									ImageView profileImg = new ImageView();
+									profileImg.setPreserveRatio(true);
+									profileImg.setPickOnBounds(true);
+									profileImg.setFitWidth(48);
+									profileImg.setFitWidth(50);
+									profileImg.setImage(image);
+									profileImg.setStyle("-fx-background-radius: 15;");
+									profileFrame.getChildren().add(profileImg);
+									
+//									Rectangle profileClip = new Rectangle();
+//									profileClip.setWidth(48);
+//									profileClip.setHeight(50);
+//									profileClip.setArcWidth(25);
+//									profileClip.setArcHeight(25);
+//									profileClip.setVisible(false);
+//									profileFrame.getChildren().add(profileClip);
+									
+									//profileImg.setClip(profileClip);
+								} catch (Exception error) {
+									error.printStackTrace();
+								}
+							}
 						}
+						currentScroll += scrollHeight;
 						//chatLabel.setText(msg);
 						
 						chatPane.getChildren().add(chatLabel);
@@ -302,9 +425,17 @@ public class ControllerRoom {
 						}
 						final String effectTypef = effectType;
 						final double effectStrengthf = effectStrength;
+						final boolean hasImagef = hasImage;
+						final double imageWidthf = imgWidth * imgScale + 10;
+						final double imagePaddingf = imagePadding;
 						
 						double chatLabelOriX = chatLabel.getLayoutX();
 						double chatLabelOriY = chatLabel.getLayoutY();
+						if (hasImage == true) {
+							imageView.setLayoutX(chatLabelOriX + imagePadding);
+							imageView.setLayoutY(chatLabelOriY + imagePadding);
+							chatPane.getChildren().add(imageView);
+						}
 						
 						String[] msgSplit = msg.split("");
 						Thread thread = new Thread() {
@@ -322,9 +453,21 @@ public class ControllerRoom {
 										String currentText = chatLabel.getText() + msgSplit[indexFinal];
 										double currentTextWidth = new Text(currentText).getLayoutBounds().getWidth();
 										chatLabel.setText(currentText);
-										chatLabel.setPrefWidth(currentTextWidth * (20 / 10) + 50);
+										if (hasImagef == false) {
+											chatLabel.setPrefWidth(currentTextWidth * (20 / 10) + 50);
+										} else {
+											if (currentTextWidth * (20 / 10) + 50 > imageWidthf + imagePaddingf * 2) {
+												chatLabel.setPrefWidth(currentTextWidth * (20 / 10) + 50);
+											}
+										}
 										if (act.equals("selfmsg") == true) {
-											chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
+											if (hasImagef == false) {
+												chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
+											} else {
+												if (currentTextWidth * (20 / 10) + 50 > imageWidthf + imagePaddingf * 2) {
+													chatLabel.setLayoutX(chatLabelOriX - currentTextWidth * (20 / 10));
+												}
+											}
 										}
 										
 										if (effectTypef.equals("shake") == true) {

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="534.0" prefWidth="823.0" style="-fx-background-color: #FFFB7C;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Button fx:id="dict" layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="54.0" style="-fx-background-color: #FFBE32; -fx-background-radius: 0;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="사전">
+         <font>
+            <Font name="Hancom Gothic Regular" size="15.0" />
+         </font>
+      </Button>
+      <Button fx:id="leave" layoutX="54.0" layoutY="484.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="54.0" style="-fx-background-color: #FF3333; -fx-background-radius: 0;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="나가기">
+         <font>
+            <Font name="Hancom Gothic Regular" size="12.0" />
+         </font>
+      </Button>
+      <Button fx:id="leave1" layoutX="736.0" layoutY="54.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="87.0" style="-fx-background-color: #DDDDDD; -fx-background-radius: 0;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="검색">
+         <font>
+            <Font name="Hancom Gothic Regular" size="20.0" />
+         </font>
+      </Button>
+      <ScrollPane fx:id="scroll" layoutY="103.0" prefHeight="431.0" prefWidth="823.0" style="-fx-background: #88FA5A;" stylesheets="@ui.css" vbarPolicy="ALWAYS">
+         <content>
+            <Pane fx:id="scrollFrame" prefHeight="431.0" prefWidth="816.0">
+               <children>
+                  <Pane prefHeight="77.0" prefWidth="816.0" style="-fx-background-color: white; -fx-border-color: lightgray; -fx-border-width: 0 0 2 0;">
+                     <children>
+                        <Text layoutX="70.0" layoutY="23.0" strokeType="OUTSIDE" strokeWidth="0.0" text="짭투채팅방" wrappingWidth="223.6513671875">
+                           <font>
+                              <Font name="Hancom Gothic Regular" size="20.0" />
+                           </font>
+                        </Text>
+                        <Pane layoutX="14.0" layoutY="14.0" prefHeight="50.0" prefWidth="48.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: lightgray; -fx-border-radius: 15;" />
+                        <Text layoutX="83.0" layoutY="47.0" strokeType="OUTSIDE" strokeWidth="0.0" text="채팅" wrappingWidth="223.6513671875">
+                           <font>
+                              <Font name="Hancom Gothic Regular" size="18.0" />
+                           </font>
+                        </Text>
+                        <Text layoutX="84.0" layoutY="64.0" strokeType="OUTSIDE" strokeWidth="0.0" text="기본 설정" wrappingWidth="223.6513671875">
+                           <font>
+                              <Font name="Hancom Gothic Regular" size="14.0" />
+                           </font>
+                        </Text>
+                        <Button fx:id="leave11" layoutX="707.0" layoutY="29.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="87.0" style="-fx-background-color: ghostwhite; -fx-background-radius: 15; -fx-border-color: lightgray; -fx-border-radius: 15;" stylesheets="@../eclipse-workspace/socket-cl/src/application/application.css" text="참가">
+                           <font>
+                              <Font name="Hancom Gothic Regular" size="20.0" />
+                           </font>
+                        </Button>
+                        <Text layoutX="707.0" layoutY="22.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0 / 0" textAlignment="CENTER" wrappingWidth="87.0">
+                           <font>
+                              <Font name="Hancom Gothic Regular" size="18.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </Pane>
+               </children>
+            </Pane>
+         </content>
+      </ScrollPane>
+      <Text fx:id="roomName" layoutX="14.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="짭투온라인" wrappingWidth="223.6513671875">
+         <font>
+            <Font name="Hancom Gothic Regular" size="24.0" />
+         </font>
+      </Text>
+      <TextField fx:id="typer" layoutY="54.0" prefHeight="50.0" prefWidth="738.0" style="-fx-background-radius: 0; -fx-effect: null;">
+         <font>
+            <Font name="Hancom Gothic Regular" size="20.0" />
+         </font>
+      </TextField>
+      <TextField fx:id="nickname" layoutX="515.0" layoutY="7.0" prefHeight="43.0" prefWidth="185.0" promptText="닉네임을 입력하세요" style="-fx-background-radius: 15; -fx-effect: null;">
+         <font>
+            <Font name="Hancom Gothic Regular" size="16.0" />
+         </font>
+      </TextField>
+      <Pane fx:id="profile" layoutX="466.0" layoutY="6.0" prefHeight="45.0" prefWidth="45.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: lightgray; -fx-border-radius: 15;">
+         <children>
+            <Rectangle fx:id="profileClip" arcHeight="25.0" arcWidth="25.0" fill="#ffffff00" height="45.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" visible="false" width="45.0" />
+            <ImageView fitHeight="45.0" fitWidth="45.0" pickOnBounds="true" preserveRatio="true" />
+         </children></Pane>
+   </children>
+</AnchorPane>
